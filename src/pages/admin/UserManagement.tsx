@@ -8,8 +8,7 @@ import {
     Shield,
     CheckCircle,
     XCircle,
-    Mail,
-    Filter
+    Mail
 } from 'lucide-react';
 import api from '../../lib/api';
 import { DashboardLayout } from '../../components/DashboardLayout';
@@ -130,20 +129,6 @@ export const UserManagement = () => {
                         />
                     </div>
                     <div className="flex items-center space-x-3">
-                        <div className="flex items-center space-x-2 bg-gray-50 border border-gray-200 rounded-lg px-3">
-                            <Filter className="text-gray-400" size={16} />
-                            <select
-                                className="bg-transparent p-2 text-sm focus:outline-none"
-                                value={roleFilter}
-                                onChange={e => setRoleFilter(e.target.value)}
-                            >
-                                <option value="ALL">All Roles</option>
-                                <option value="ADMIN">Admins</option>
-                                <option value="TEACHER">Teachers</option>
-                                <option value="PARENT">Parents</option>
-                                <option value="STUDENT">Students</option>
-                            </select>
-                        </div>
                         <button
                             onClick={fetchUsers}
                             className="p-2.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
@@ -151,6 +136,26 @@ export const UserManagement = () => {
                             <MoreVertical size={20} className="text-gray-400" />
                         </button>
                     </div>
+                </div>
+
+                {/* Tabs */}
+                <div className="border-b border-gray-200">
+                    <nav className="-mb-px flex space-x-6">
+                        {['ALL', 'TEACHER', 'PARENT', 'STUDENT'].map((role) => (
+                            <button
+                                key={role}
+                                onClick={() => setRoleFilter(role)}
+                                className={`
+                                    whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm transition-colors
+                                    ${roleFilter === role
+                                        ? 'border-primary-500 text-primary-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
+                                `}
+                            >
+                                {role === 'ALL' ? 'All Users' : role.charAt(0) + role.slice(1).toLowerCase() + 's'}
+                            </button>
+                        ))}
+                    </nav>
                 </div>
 
                 {/* Users Table */}
@@ -229,7 +234,10 @@ export const UserManagement = () => {
                                                 >
                                                     <Shield size={18} />
                                                 </button>
-                                                <button className="p-1.5 text-gray-400 hover:text-gray-900">
+                                                <button
+                                                    onClick={() => navigate(`/admin/users/${user.id}`)}
+                                                    className="p-1.5 text-gray-400 hover:text-gray-900"
+                                                >
                                                     <MoreVertical size={18} />
                                                 </button>
                                             </div>

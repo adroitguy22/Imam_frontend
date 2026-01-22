@@ -33,6 +33,8 @@ export const LogProgress = () => {
         challenges: [] as string[],
         interventions: [] as string[],
         isBaseline: false,
+        resultAchieved: '',
+        followUpIntervention: '',
     });
 
     const [newTag, setNewTag] = useState({
@@ -379,6 +381,29 @@ export const LogProgress = () => {
                         </div>
                     </div>
 
+                    <div className="space-y-2 pt-4 border-t border-gray-100">
+                        <label className="text-sm font-semibold text-gray-700">Result Achieved (Outcome)</label>
+                        <textarea
+                            rows={3}
+                            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500"
+                            placeholder="What was the outcome of the assessment?"
+                            value={formData.resultAchieved}
+                            onChange={e => setFormData({ ...formData, resultAchieved: e.target.value })}
+                        ></textarea>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">Follow-up Intervention Needed?</label>
+                        <textarea
+                            rows={3}
+                            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500"
+                            placeholder="Note any specific follow-up actions required..."
+                            value={formData.followUpIntervention}
+                            onChange={e => setFormData({ ...formData, followUpIntervention: e.target.value })}
+                        ></textarea>
+                    </div>
+
+
                     <div className="flex items-center justify-end space-x-4">
                         <button
                             type="button"
@@ -403,7 +428,7 @@ export const LogProgress = () => {
                         </button>
                     </div>
                 </form>
-            </div>
-        </DashboardLayout>
+            </div >
+        </DashboardLayout >
     );
 };

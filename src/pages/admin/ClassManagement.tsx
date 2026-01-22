@@ -184,7 +184,10 @@ export const ClassManagement = () => {
                                 </div>
                             </div>
 
-                            <button className="w-full mt-6 py-2 flex items-center justify-center space-x-2 text-sm font-bold text-primary-600 hover:bg-primary-50 rounded-lg transition-colors border border-primary-100">
+                            <button
+                                onClick={() => navigate(`/admin/classes/${cls.id}`)}
+                                className="w-full mt-6 py-2 flex items-center justify-center space-x-2 text-sm font-bold text-primary-600 hover:bg-primary-50 rounded-lg transition-colors border border-primary-100"
+                            >
                                 <ExternalLink size={16} />
                                 <span>View Class Details</span>
                             </button>

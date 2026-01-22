@@ -73,7 +73,7 @@ export const AdminDashboard = () => {
             <div className="space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Admin Command Center</h1>
+                        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
                         <p className="text-gray-500">Manage the Imam Malik Academy monitoring system.</p>
                     </div>
                     <div className="flex items-center space-x-3">
@@ -109,93 +109,58 @@ export const AdminDashboard = () => {
                     ))}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Quick Actions */}
-                    <div className="space-y-4">
-                        <h2 className="text-lg font-bold text-gray-900">Quick Management</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <button
-                                onClick={() => navigate('/admin/users')}
-                                className="card hover:shadow-md transition-shadow flex items-center space-x-4 text-left group"
-                            >
-                                <div className="p-3 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                    <Shield size={24} />
-                                </div>
-                                <div>
-                                    <p className="font-bold text-gray-900 text-sm">Role Permissions</p>
-                                    <p className="text-xs text-gray-500 italic">Configure access levels</p>
-                                </div>
-                            </button>
-
-                            <button
-                                onClick={() => navigate('/admin/settings')}
-                                className="card hover:shadow-md transition-shadow flex items-center space-x-4 text-left group"
-                            >
-                                <div className="p-3 bg-green-50 text-green-600 rounded-lg group-hover:bg-green-600 group-hover:text-white transition-colors">
-                                    <PlusCircle size={24} />
-                                </div>
-                                <div>
-                                    <p className="font-bold text-gray-900 text-sm">Skill Domains</p>
-                                    <p className="text-xs text-gray-500 italic">Manage assessment areas</p>
-                                </div>
-                            </button>
-
-                            <button
-                                onClick={() => navigate('/admin/classes')}
-                                className="card hover:shadow-md transition-shadow flex items-center space-x-4 text-left group"
-                            >
-                                <div className="p-3 bg-purple-50 text-purple-600 rounded-lg group-hover:bg-purple-600 group-hover:text-white transition-colors">
-                                    <BookOpen size={24} />
-                                </div>
-                                <div>
-                                    <p className="font-bold text-gray-900 text-sm">Class Groups</p>
-                                    <p className="text-xs text-gray-500 italic">Organize student groups</p>
-                                </div>
-                            </button>
-
-                            <button className="card hover:shadow-md transition-shadow flex items-center space-x-4 text-left group">
-                                <div className="p-3 bg-gray-50 text-gray-600 rounded-lg group-hover:bg-gray-800 group-hover:text-white transition-colors">
-                                    <Settings size={24} />
-                                </div>
-                                <div>
-                                    <p className="font-bold text-gray-900 text-sm">System Logs</p>
-                                    <p className="text-xs text-gray-500 italic">View audit history</p>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* System Health / Status */}
-                    <div className="space-y-4">
-                        <h2 className="text-lg font-bold text-gray-900">System Status</h2>
-                        <div className="card space-y-4">
-                            <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-100">
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                    <span className="text-sm font-medium text-green-800">Database Connection</span>
-                                </div>
-                                <span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded">HEALTHY</span>
+                {/* Quick Actions */}
+                <div className="space-y-4">
+                    <h2 className="text-lg font-bold text-gray-900">Quick Management</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <button
+                            onClick={() => navigate('/admin/users')}
+                            className="card hover:shadow-md transition-shadow flex items-center space-x-4 text-left group"
+                        >
+                            <div className="p-3 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                <Shield size={24} />
                             </div>
-
-                            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100">
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                    <span className="text-sm font-medium text-blue-800">Email Service</span>
-                                </div>
-                                <span className="text-xs font-bold text-blue-700 bg-blue-100 px-2 py-1 rounded">READY</span>
+                            <div>
+                                <p className="font-bold text-gray-900 text-sm">Role Permissions</p>
+                                <p className="text-xs text-gray-500 italic">Configure access levels</p>
                             </div>
+                        </button>
 
-                            <div className="space-y-2 pt-2">
-                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Storage Usage</p>
-                                <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                                    <div className="bg-primary-500 h-full w-[12%]"></div>
-                                </div>
-                                <div className="flex justify-between text-[10px] text-gray-400 font-bold">
-                                    <span>1.2 GB / 10 GB</span>
-                                    <span>12%</span>
-                                </div>
+                        <button
+                            onClick={() => navigate('/admin/settings')}
+                            className="card hover:shadow-md transition-shadow flex items-center space-x-4 text-left group"
+                        >
+                            <div className="p-3 bg-green-50 text-green-600 rounded-lg group-hover:bg-green-600 group-hover:text-white transition-colors">
+                                <PlusCircle size={24} />
                             </div>
-                        </div>
+                            <div>
+                                <p className="font-bold text-gray-900 text-sm">Skill Domains</p>
+                                <p className="text-xs text-gray-500 italic">Manage assessment areas</p>
+                            </div>
+                        </button>
+
+                        <button
+                            onClick={() => navigate('/admin/classes')}
+                            className="card hover:shadow-md transition-shadow flex items-center space-x-4 text-left group"
+                        >
+                            <div className="p-3 bg-purple-50 text-purple-600 rounded-lg group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                                <BookOpen size={24} />
+                            </div>
+                            <div>
+                                <p className="font-bold text-gray-900 text-sm">Class Groups</p>
+                                <p className="text-xs text-gray-500 italic">Organize student groups</p>
+                            </div>
+                        </button>
+
+                        <button className="card hover:shadow-md transition-shadow flex items-center space-x-4 text-left group">
+                            <div className="p-3 bg-gray-50 text-gray-600 rounded-lg group-hover:bg-gray-800 group-hover:text-white transition-colors">
+                                <Settings size={24} />
+                            </div>
+                            <div>
+                                <p className="font-bold text-gray-900 text-sm">System Logs</p>
+                                <p className="text-xs text-gray-500 italic">View audit history</p>
+                            </div>
+                        </button>
                     </div>
                 </div>
             </div>

@@ -1,12 +1,14 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { useToast } from '../components/Toast';
 import { BookOpen, Lock, Mail } from 'lucide-react';
 
 export const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { login, isLoading, error, clearError } = useAuthStore();
+    const { showError } = useToast();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: FormEvent) => {
@@ -17,7 +19,6 @@ export const LoginPage = () => {
             await login(email, password);
             const user = useAuthStore.getState().user;
 
-            // Redirect based on role
             if (user?.role === 'TEACHER') {
                 navigate('/teacher/dashboard');
             } else if (user?.role === 'PARENT') {
@@ -28,7 +29,9 @@ export const LoginPage = () => {
                 navigate('/admin/dashboard');
             }
         } catch (err) {
-            // Error is handled by the store
+            if (error) {
+                showError(error);
+            }
         }
     };
 
@@ -109,6 +112,17 @@ export const LoginPage = () => {
                         >
                             {isLoading ? 'Signing in...' : 'Sign In'}
                         </button>
+
+                        <div className="text-center mt-4">
+                            <span className="text-gray-600">Don't have an account? </span>
+                            <button
+                                type="button"
+                                onClick={() => navigate('/signup')}
+                                className="text-primary-600 hover:text-primary-700 font-semibold"
+                            >
+                                Sign Up
+                            </button>
+                        </div>
                     </form>
 
                     <div className="mt-6 text-center">

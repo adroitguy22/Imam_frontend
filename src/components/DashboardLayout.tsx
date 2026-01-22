@@ -11,7 +11,8 @@ import {
     Settings,
     BookOpen,
     CheckCircle,
-    User
+    User,
+    MessageSquare
 } from 'lucide-react';
 import { SyncStatus } from './SyncStatus';
 
@@ -60,12 +61,14 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         { icon: <BookOpen size={20} />, label: 'Lessons', href: '/teacher/lessons' },
         { icon: <CheckCircle size={20} />, label: 'Attendance', href: '/teacher/attendance' },
         { icon: <BarChart2 size={20} />, label: 'Analytics', href: '/teacher/analytics' },
+        { icon: <MessageSquare size={20} />, label: 'Messages', href: '/messaging' },
     ];
 
     const parentLinks = [
         { icon: <Home size={20} />, label: 'Dashboard', href: '/parent/dashboard' },
         { icon: <Users size={20} />, label: 'My Children', href: '/parent/children' },
         { icon: <BarChart2 size={20} />, label: 'Progress Reports', href: '/parent/reports' },
+        { icon: <MessageSquare size={20} />, label: 'Messages', href: '/messaging' },
     ];
 
     const adminLinks = [
@@ -73,6 +76,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         { icon: <Users size={20} />, label: 'User Management', href: '/admin/users' },
         { icon: <BookOpen size={20} />, label: 'Class Management', href: '/admin/classes' },
         { icon: <Settings size={20} />, label: 'System Settings', href: '/admin/settings' },
+        { icon: <MessageSquare size={20} />, label: 'Messages', href: '/messaging' },
     ];
 
     const links = role === 'teacher' ? teacherLinks : role === 'parent' ? parentLinks : adminLinks;

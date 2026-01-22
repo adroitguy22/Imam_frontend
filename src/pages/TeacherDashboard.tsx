@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import api from '../lib/api';
 import { DashboardLayout } from '../components/DashboardLayout';
+import { RegisterStudentModal } from '../components/RegisterStudentModal';
 
 interface Student {
     id: string;
@@ -42,31 +43,31 @@ interface ProgressLog {
 export const TeacherDashboard = () => {
     const [students, setStudents] = useState<Student[]>([]);
     const [recentLogs, setRecentLogs] = useState<ProgressLog[]>([]);
+    const [classes, setClasses] = useState<{ id: string; name: string }[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
     const navigate = useNavigate();
 
+    const fetchDashboardData = async () => {
+        try {
+            const [logs, studentsData, classesData] = await Promise.all([
+                api.getTeacherProgressLogs(),
+                api.getTeacherStudents(),
+                api.getClasses() // Teachers can access this now
+            ]);
+
+            setRecentLogs(logs.slice(0, 5));
+            setStudents(studentsData);
+            setClasses(classesData);
+        } catch (error) {
+            console.error('Failed to fetch dashboard data', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // Fetch teacher's logs
-                const logs = await api.getTeacherProgressLogs();
-                setRecentLogs(logs.slice(0, 5));
-
-                // Note: We might need an endpoint for "My Students"
-                // For now, let's try to get all students or mock if needed
-                // Considering we don't have a direct "getTeacherStudents" in api.ts yet,
-                // but we can request it via generic method if we knew the route.
-                // Let's assume there is an index or we'll add it to api.ts properly.
-                const studentsResp = await api.request('GET', '/progress/teacher/my-students');
-                setStudents(studentsResp);
-            } catch (error) {
-                console.error('Failed to fetch dashboard data', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchData();
+        fetchDashboardData();
     }, []);
 
     const stats = [
@@ -94,13 +95,22 @@ export const TeacherDashboard = () => {
                         <h1 className="text-2xl font-bold text-gray-900">Teacher Dashboard</h1>
                         <p className="text-gray-500">Welcome back! Here's what's happening with your students.</p>
                     </div>
-                    <button
-                        onClick={() => navigate('/teacher/log-progress')}
-                        className="btn btn-primary flex items-center space-x-2"
-                    >
-                        <PlusCircle size={20} />
-                        <span>New Assessment</span>
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setIsRegisterModalOpen(true)}
+                            className="btn bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                        >
+                            <Users size={20} />
+                            <span>Register Student</span>
+                        </button>
+                        <button
+                            onClick={() => navigate('/teacher/log-progress')}
+                            className="btn btn-primary flex items-center space-x-2"
+                        >
+                            <PlusCircle size={20} />
+                            <span>New Assessment</span>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Stats Grid */}
@@ -147,27 +157,33 @@ export const TeacherDashboard = () => {
                                 </button>
                             </div>
 
-                            <div className="divide-y divide-gray-100">
-                                {students.map((student) => (
-                                    <div
-                                        key={student.id}
-                                        className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors"
-                                        onClick={() => navigate(`/teacher/students/${student.id}`)}
-                                    >
-                                        <div className="flex items-center space-x-3">
-                                            <div className="w-10 h-10 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold">
-                                                {student.user.firstName[0]}{student.user.lastName[0]}
+                            <div className="divide-y divide-gray-100 max-h-[400px] overflow-y-auto">
+                                {students.length > 0 ? (
+                                    students.map((student) => (
+                                        <div
+                                            key={student.id}
+                                            className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors"
+                                            onClick={() => navigate(`/teacher/students/${student.id}`)}
+                                        >
+                                            <div className="flex items-center space-x-3">
+                                                <div className="w-10 h-10 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold">
+                                                    {student.user.firstName[0]}{student.user.lastName[0]}
+                                                </div>
+                                                <div>
+                                                    <p className="font-semibold text-gray-900">{student.user.firstName} {student.user.lastName}</p>
+                                                    <p className="text-xs text-gray-500">{student.studentId} • {student.class?.name || 'No Class'}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="font-semibold text-gray-900">{student.user.firstName} {student.user.lastName}</p>
-                                                <p className="text-xs text-gray-500">{student.studentId} • {student.class.name}</p>
-                                            </div>
+                                            <button className="text-gray-400 hover:text-primary-600">
+                                                <ArrowRight size={20} />
+                                            </button>
                                         </div>
-                                        <button className="text-gray-400 hover:text-primary-600">
-                                            <ArrowRight size={20} />
-                                        </button>
+                                    ))
+                                ) : (
+                                    <div className="p-8 text-center text-gray-500">
+                                        No students found. Register one to get started!
                                     </div>
-                                ))}
+                                )}
                             </div>
                         </div>
                     </div>
@@ -195,6 +211,15 @@ export const TeacherDashboard = () => {
                         </div>
                     </div>
                 </div>
+
+                <RegisterStudentModal
+                    isOpen={isRegisterModalOpen}
+                    onClose={() => setIsRegisterModalOpen(false)}
+                    onSuccess={() => {
+                        fetchDashboardData();
+                    }}
+                    teacherClasses={classes}
+                />
             </div>
         </DashboardLayout>
     );

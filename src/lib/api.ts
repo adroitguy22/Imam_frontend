@@ -1,6 +1,19 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
+import { getErrorMessage, isNetworkError } from './error-handler';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : 'https://imam-malik-monitoring.onrender.com/api';
+
+let toastCallback: ((message: string, type: 'error' | 'success' | 'info' | 'warning') => void) | null = null;
+
+export const setToastCallback = (callback: typeof toastCallback) => {
+  toastCallback = callback;
+};
+
+const showToast = (message: string, type: 'error' | 'success' | 'info' | 'warning' = 'error') => {
+  if (toastCallback) {
+    toastCallback(message, type);
+  }
+};
 
 class ApiClient {
     private client: AxiosInstance;
@@ -11,6 +24,7 @@ class ApiClient {
             headers: {
                 'Content-Type': 'application/json',
             },
+            timeout: 10000,
         });
 
         // Request interceptor to add auth token
@@ -46,11 +60,16 @@ class ApiClient {
             (error) => Promise.reject(error)
         );
 
-        // Response interceptor to handle token refresh
+        // Response interceptor to handle errors and token refresh
         this.client.interceptors.response.use(
             (response) => response,
             async (error: AxiosError) => {
                 const originalRequest = error.config as any;
+
+                if (isNetworkError(error)) {
+                    showToast('Unable to connect to the server. Please check your internet connection.', 'error');
+                    return Promise.reject(error);
+                }
 
                 if (error.response?.status === 401 && !originalRequest._retry) {
                     originalRequest._retry = true;
@@ -95,11 +114,14 @@ class ApiClient {
                         localStorage.removeItem('accessToken');
                         localStorage.removeItem('refreshToken');
                         localStorage.removeItem('user');
+                        showToast('Your session has expired. Please log in again.', 'error');
                         window.location.href = '/login';
                         return Promise.reject(refreshError);
                     }
                 }
 
+                const message = getErrorMessage(error);
+                showToast(message, 'error');
                 return Promise.reject(error);
             }
         );
@@ -216,6 +238,11 @@ class ApiClient {
         return response.data;
     }
 
+    async getUser(id: string) {
+        const response = await this.client.get(`/users/${id}`);
+        return response.data;
+    }
+
     async updateUser(id: string, data: any) {
         const response = await this.client.put(`/users/${id}`, data);
         return response.data;
@@ -224,6 +251,11 @@ class ApiClient {
     // Class Management
     async getClasses() {
         const response = await this.client.get('/classes');
+        return response.data;
+    }
+
+    async getClass(id: string) {
+        const response = await this.client.get(`/classes/${id}`);
         return response.data;
     }
 
@@ -240,6 +272,16 @@ class ApiClient {
 
     async getStudentById(id: string) {
         const response = await this.client.get(`/students/${id}`);
+        return response.data;
+    }
+
+    async linkStudentParent(studentId: string, parentId: string) {
+        const response = await this.client.post(`/students/${studentId}/parents`, { parentId });
+        return response.data;
+    }
+
+    async unlinkStudentParent(studentId: string, parentId: string) {
+        const response = await this.client.delete(`/students/${studentId}/parents/${parentId}`);
         return response.data;
     }
 

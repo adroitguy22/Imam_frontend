@@ -5,12 +5,17 @@ import { LogProgress } from './pages/LogProgress';
 import { LoginPage } from './pages/LoginPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 import { AdminDashboard } from './pages/AdminDashboard';
 import { ParentDashboard } from './pages/ParentDashboard';
 import { UserManagement } from './pages/admin/UserManagement';
+import { UserDetails } from './pages/admin/UserDetails';
 import { ClassManagement } from './pages/admin/ClassManagement';
+import { ClassDetails } from './pages/admin/ClassDetails';
 import { SystemSettings } from './pages/admin/SystemSettings';
+import { SignupPage } from './pages/SignupPage';
+import { Messaging } from './pages/Messaging';
 import { StudentProfile } from './pages/StudentProfile';
 import { AttendanceRegister } from './pages/AttendanceRegister';
 
@@ -45,10 +50,25 @@ function App() {
 
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <Routes>
+      <ErrorBoundary>
+        <Routes>
         <Route
           path="/login"
           element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
+        />
+
+        <Route
+          path="/signup"
+          element={isAuthenticated ? <Navigate to="/" replace /> : <SignupPage />}
+        />
+
+        <Route
+          path="/messaging"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'TEACHER', 'PARENT']}>
+              <Messaging />
+            </ProtectedRoute>
+          }
         />
 
         <Route
@@ -135,10 +155,28 @@ function App() {
         />
 
         <Route
+          path="/admin/users/:id"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <UserDetails />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/admin/classes"
           element={
             <ProtectedRoute allowedRoles={['ADMIN']}>
               <ClassManagement />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/classes/:id"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <ClassDetails />
             </ProtectedRoute>
           }
         />
@@ -155,7 +193,8 @@ function App() {
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+        </Routes>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }
