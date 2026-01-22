@@ -15,6 +15,7 @@ import {
     MessageSquare
 } from 'lucide-react';
 import { SyncStatus } from './SyncStatus';
+import logo from '../assets/logo.jpeg';
 
 interface SidebarItemProps {
     icon: React.ReactNode;
@@ -99,8 +100,8 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       `}>
                 <div className="h-full flex flex-col">
                     <div className="p-6 flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
-                            <BookOpen className="text-white" size={24} />
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
+                            <img src={logo} alt="Imam Malik Academy" className="w-full h-full object-cover" />
                         </div>
                         <span className="text-xl font-bold text-gray-900">StudentApp</span>
                     </div>

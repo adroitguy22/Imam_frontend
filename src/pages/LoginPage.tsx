@@ -2,7 +2,8 @@ import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useToast } from '../components/Toast';
-import { BookOpen, Lock, Mail } from 'lucide-react';
+import { Lock, Mail } from 'lucide-react';
+import logo from '../assets/logo.jpeg';
 
 export const LoginPage = () => {
     const [email, setEmail] = useState('');
@@ -40,8 +41,8 @@ export const LoginPage = () => {
             <div className="max-w-md w-full">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-2xl mb-4">
-                        <BookOpen className="w-8 h-8 text-white" />
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-4 overflow-hidden">
+                        <img src={logo} alt="Imam Malik Academy" className="w-full h-full object-cover" />
                     </div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
                         Welcome Back
