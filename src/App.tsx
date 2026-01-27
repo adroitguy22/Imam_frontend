@@ -18,6 +18,8 @@ import { SignupPage } from './pages/SignupPage';
 import { Messaging } from './pages/Messaging';
 import { StudentProfile } from './pages/StudentProfile';
 import { AttendanceRegister } from './pages/AttendanceRegister';
+import ChatWidget from './components/ChatWidget';
+import ChatMonitoring from './pages/admin/ChatMonitoring';
 
 const StudentDashboard = () => (
   <DashboardLayout>
@@ -51,148 +53,158 @@ function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ErrorBoundary>
+        <ChatWidget />
         <Routes>
-        <Route
-          path="/login"
-          element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
-        />
+          <Route
+            path="/login"
+            element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
+          />
 
-        <Route
-          path="/signup"
-          element={isAuthenticated ? <Navigate to="/" replace /> : <SignupPage />}
-        />
+          <Route
+            path="/signup"
+            element={isAuthenticated ? <Navigate to="/" replace /> : <SignupPage />}
+          />
 
-        <Route
-          path="/messaging"
-          element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'TEACHER', 'PARENT']}>
-              <Messaging />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/messaging"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'TEACHER', 'PARENT']}>
+                <Messaging />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/"
-          element={
-            isAuthenticated ? (
-              <Navigate to={`/${useAuthStore.getState().user?.role.toLowerCase()}/dashboard`} replace />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
+          <Route
+            path="/"
+            element={
+              isAuthenticated ? (
+                <Navigate to={`/${useAuthStore.getState().user?.role.toLowerCase()}/dashboard`} replace />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
 
-        <Route
-          path="/teacher/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
-              <TeacherDashboard />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/teacher/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
+                <TeacherDashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/teacher/log-progress"
-          element={
-            <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
-              <LogProgress />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/teacher/log-progress"
+            element={
+              <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
+                <LogProgress />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/teacher/attendance"
-          element={
-            <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
-              <AttendanceRegister />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/teacher/attendance"
+            element={
+              <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
+                <AttendanceRegister />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/parent/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['PARENT']}>
-              <ParentDashboard />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/parent/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['PARENT']}>
+                <ParentDashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/student/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['STUDENT']}>
-              <StudentDashboard />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/student/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['STUDENT']}>
+                <StudentDashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/student/:id"
-          element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'TEACHER', 'PARENT']}>
-              <StudentProfile />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/student/:id"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'TEACHER', 'PARENT']}>
+                <StudentProfile />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/admin/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/admin/users"
-          element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
-              <UserManagement />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <UserManagement />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/admin/users/:id"
-          element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
-              <UserDetails />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/admin/users/:id"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <UserDetails />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/admin/classes"
-          element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
-              <ClassManagement />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/admin/classes"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <ClassManagement />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/admin/classes/:id"
-          element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
-              <ClassDetails />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/admin/classes/:id"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <ClassDetails />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/admin/settings"
-          element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
-              <SystemSettings />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/admin/settings"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <SystemSettings />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route path="/unauthorized" element={<UnauthorizedPage />} />
+          <Route
+            path="/admin/chat"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <ChatMonitoring />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </ErrorBoundary>
     </BrowserRouter>

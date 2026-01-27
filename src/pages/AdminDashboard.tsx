@@ -31,8 +31,8 @@ export const AdminDashboard = () => {
                 // For this demo, let's assume we have a way to get counts
                 // or just show what we have.
                 const [_, students] = await Promise.all([
-                    api.request('GET', '/api/students/teacher/my-students'), // Reusing for now
-                    api.request('GET', '/api/students/teacher/my-students'),
+                    api.getTeacherStudents(), // Reusing for now
+                    api.getTeacherStudents(),
                 ]);
 
                 setStats({

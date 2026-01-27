@@ -19,7 +19,7 @@ export const ParentDashboard = () => {
             try {
                 // Mocking parent's children for now since we don't have a direct parent/children endpoint implementation
                 // But we can simulate finding students where parentId matches
-                const students = await api.request('GET', '/api/students/teacher/my-students'); // Temporary reuse
+                const students = await api.getTeacherStudents(); // Temporary reuse
                 setChildren(students);
             } catch (err) {
                 console.error('Failed to fetch children', err);

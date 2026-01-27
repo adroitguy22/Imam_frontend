@@ -42,7 +42,7 @@ export const Messaging = () => {
     const fetchUsers = async () => {
         try {
             // Re-using user management for now or we could add a specific "contacts" endpoint
-            const users = await api.request('GET', '/api/users');
+            const users = await api.request('GET', '/users');
             // Filter out self
             setConversations(users.filter((u: any) => u.id !== user?.id));
         } catch (err) {
@@ -54,7 +54,7 @@ export const Messaging = () => {
         setIsLoading(true);
         setSelectedUser(userId);
         try {
-            const msgs = await api.request('GET', `/api/messages/conversation/${userId}`);
+            const msgs = await api.request('GET', `/messages/conversation/${userId}`);
             setMessages(msgs);
             scrollToBottom();
         } catch (err) {
@@ -69,7 +69,7 @@ export const Messaging = () => {
         if (!newMessage.trim() || !selectedUser) return;
 
         try {
-            const msg = await api.request('POST', '/api/messages/send', {
+            const msg = await api.request('POST', '/messages/send', {
                 receiverId: selectedUser,
                 content: newMessage
             });

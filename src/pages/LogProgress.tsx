@@ -63,7 +63,7 @@ export const LogProgress = () => {
                 }
 
                 const [studentsData, domainsData, termsData] = await Promise.all([
-                    api.request('GET', '/api/students/teacher/my-students'),
+                    api.getTeacherStudents(),
                     api.getSkillDomains(),
                     api.getTerms(),
                 ]);

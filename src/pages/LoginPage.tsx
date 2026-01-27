@@ -125,15 +125,6 @@ export const LoginPage = () => {
                             </button>
                         </div>
                     </form>
-
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
-                            Default credentials for testing:
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                            admin@imammalik.edu.ng / admin123
-                        </p>
-                    </div>
                 </div>
 
                 {/* Footer */}

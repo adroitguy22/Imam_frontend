@@ -68,8 +68,8 @@ export const AttendanceRegister = () => {
     const fetchStudents = async (classId: string) => {
         setIsLoading(true);
         try {
-            const data = await api.request('GET', `/api/classes/${classId}/students`);
-            setStudents(data);
+            const data = await api.getClass(classId);
+            setStudents(data.students);
 
             // Initialize attendance state
             const initialAttendance: Record<string, { status: string, notes: string }> = {};
@@ -232,8 +232,8 @@ export const AttendanceRegister = () => {
                                                 <button
                                                     onClick={() => handleStatusChange(student.id, 'PRESENT')}
                                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 transition-all ${attendance[student.id]?.status === 'PRESENT'
-                                                            ? 'bg-green-500 text-white shadow-sm'
-                                                            : 'text-gray-500 hover:text-gray-700'
+                                                        ? 'bg-green-500 text-white shadow-sm'
+                                                        : 'text-gray-500 hover:text-gray-700'
                                                         }`}
                                                 >
                                                     <CheckCircle size={14} />
@@ -242,8 +242,8 @@ export const AttendanceRegister = () => {
                                                 <button
                                                     onClick={() => handleStatusChange(student.id, 'LATE')}
                                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 transition-all ${attendance[student.id]?.status === 'LATE'
-                                                            ? 'bg-amber-500 text-white shadow-sm'
-                                                            : 'text-gray-500 hover:text-gray-700'
+                                                        ? 'bg-amber-500 text-white shadow-sm'
+                                                        : 'text-gray-500 hover:text-gray-700'
                                                         }`}
                                                 >
                                                     <Clock size={14} />
@@ -252,8 +252,8 @@ export const AttendanceRegister = () => {
                                                 <button
                                                     onClick={() => handleStatusChange(student.id, 'ABSENT')}
                                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 transition-all ${attendance[student.id]?.status === 'ABSENT'
-                                                            ? 'bg-red-500 text-white shadow-sm'
-                                                            : 'text-gray-500 hover:text-gray-700'
+                                                        ? 'bg-red-500 text-white shadow-sm'
+                                                        : 'text-gray-500 hover:text-gray-700'
                                                         }`}
                                                 >
                                                     <XCircle size={14} />
