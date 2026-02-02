@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageSquare, X, Send, Minimize2, Maximize2 } from 'lucide-react';
+import { MessageSquare, X, Send } from 'lucide-react';
 import axios from 'axios';
 import { useAuthStore } from '../stores/authStore'; // Correct path
 

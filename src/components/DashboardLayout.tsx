@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { useMessageStore } from '../stores/messageStore';
+import { useEffect } from 'react';
 import {
     Home,
     Users,
@@ -23,19 +25,25 @@ interface SidebarItemProps {
     href: string;
     active: boolean;
     onClick?: () => void;
+    badge?: number;
 }
 
-const SidebarItem = ({ icon, label, href, active, onClick }: SidebarItemProps) => (
+const SidebarItem = ({ icon, label, href, active, onClick, badge }: SidebarItemProps) => (
     <Link
         to={href}
         onClick={onClick}
-        className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${active
+        className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors relative ${active
             ? 'bg-primary-50 text-primary-700'
             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
             }`}
     >
         {icon}
         <span className="font-medium">{label}</span>
+        {badge !== undefined && badge > 0 && (
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center min-w-[20px] h-[20px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-white">
+                {badge > 99 ? '99+' : badge}
+            </span>
+        )}
     </Link>
 );
 
@@ -46,8 +54,19 @@ interface DashboardLayoutProps {
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const { user, logout } = useAuthStore();
+    const { unreadCount, fetchUnreadCount } = useMessageStore();
     const location = useLocation();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user) {
+            fetchUnreadCount();
+            // Poll for new messages every minute
+            const interval = setInterval(fetchUnreadCount, 60000);
+            return () => clearInterval(interval);
+        }
+    }, [user, fetchUnreadCount]);
+
 
     const handleLogout = () => {
         logout();
@@ -112,6 +131,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                                 key={link.href}
                                 {...link}
                                 active={location.pathname === link.href}
+                                badge={link.label === 'Messages' ? unreadCount : undefined}
                                 onClick={() => setIsSidebarOpen(false)}
                             />
                         ))}

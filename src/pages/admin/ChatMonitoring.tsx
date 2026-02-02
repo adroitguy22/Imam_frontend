@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuthStore } from '../../stores/authStore';
-import { MessageSquare, Search, User, Calendar, Clock } from 'lucide-react';
+import { MessageSquare, Search } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface ChatSession {

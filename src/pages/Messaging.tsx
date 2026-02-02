@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
+import { useMessageStore } from '../stores/messageStore';
 import { Send, User as UserIcon, Loader } from 'lucide-react';
 
 interface Message {
@@ -23,6 +24,7 @@ interface Message {
 
 export const Messaging = () => {
     const { user } = useAuthStore();
+    const { fetchUnreadCount } = useMessageStore();
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [conversations, setConversations] = useState<any[]>([]); // simplified for now
@@ -56,6 +58,11 @@ export const Messaging = () => {
         try {
             const msgs = await api.request('GET', `/messages/conversation/${userId}`);
             setMessages(msgs);
+
+            // Mark as read
+            await api.request('PATCH', `/messages/mark-as-read/${userId}`);
+            fetchUnreadCount(); // Update the sidebar badge
+
             scrollToBottom();
         } catch (err) {
             console.error("Failed to load conversation", err);
