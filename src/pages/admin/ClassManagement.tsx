@@ -26,6 +26,13 @@ export const ClassManagement = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedClass, setSelectedClass] = useState<any>(null);
+    const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const handleClickOutside = () => setActiveMenuId(null);
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
 
     useEffect(() => {
         fetchClasses();
@@ -126,36 +133,49 @@ export const ClassManagement = () => {
                                         <span>Level: {cls.level}</span>
                                     </p>
                                 </div>
-                                <div className="relative group/menu">
+                                <div className="relative">
                                     <button
-                                        onClick={(e) => e.stopPropagation()}
-                                        className="p-1 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setActiveMenuId(activeMenuId === cls.id ? null : cls.id);
+                                        }}
+                                        className={`p-1 rounded-full transition-all ${activeMenuId === cls.id
+                                            ? 'bg-primary-100 text-primary-700'
+                                            : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100'
+                                            }`}
                                     >
                                         <MoreVertical size={20} />
                                     </button>
 
-                                    <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-10 hidden group-hover/menu:block">
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleEditClass(cls);
-                                            }}
-                                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                                    {activeMenuId === cls.id && (
+                                        <div
+                                            className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-50 animate-dropdown-in"
+                                            onClick={(e) => e.stopPropagation()}
                                         >
-                                            <Edit size={16} className="text-blue-500" />
-                                            <span>Edit Class</span>
-                                        </button>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDeleteClass(cls.id);
-                                            }}
-                                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 border-t border-gray-50"
-                                        >
-                                            <Trash size={16} />
-                                            <span>Delete Class</span>
-                                        </button>
-                                    </div>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleEditClass(cls);
+                                                    setActiveMenuId(null);
+                                                }}
+                                                className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors flex items-center space-x-3"
+                                            >
+                                                <Edit size={16} />
+                                                <span className="font-medium">Edit Class</span>
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteClass(cls.id);
+                                                    setActiveMenuId(null);
+                                                }}
+                                                className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center space-x-3 border-t border-gray-50"
+                                            >
+                                                <Trash size={16} />
+                                                <span className="font-medium">Delete Class</span>
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

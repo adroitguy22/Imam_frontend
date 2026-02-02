@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
     ArrowLeft,
     User,
@@ -14,7 +14,8 @@ import {
     UserPlus,
     Trash2,
     X,
-    Check
+    Check,
+    Wallet
 } from 'lucide-react';
 import api from '../lib/api';
 import { DashboardLayout } from '../components/DashboardLayout';
@@ -27,10 +28,12 @@ import { useAuthStore } from '../stores/authStore';
 export const StudentProfile = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
     const { user: currentUser } = useAuthStore();
     const [student, setStudent] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'overview');
+    const [studentFees, setStudentFees] = useState<any[]>([]);
 
     // Parent Management State
     const [isAddingParent, setIsAddingParent] = useState(false);
@@ -41,8 +44,18 @@ export const StudentProfile = () => {
     useEffect(() => {
         if (id) {
             fetchStudentDetails();
+            fetchStudentFees();
         }
     }, [id]);
+
+    const fetchStudentFees = async () => {
+        try {
+            const data = await api.getFees({ studentId: id! });
+            setStudentFees(data);
+        } catch (err) {
+            console.error('Failed to fetch student fees', err);
+        }
+    };
 
     const fetchStudentDetails = async () => {
         setIsLoading(true);
@@ -251,7 +264,7 @@ export const StudentProfile = () => {
 
                     {/* Tabs Navigation */}
                     <div className="bg-white/10 backdrop-blur-md px-8 flex overflow-x-auto border-t border-white/10 scrollbar-hide">
-                        {['overview', 'portfolio', 'achievements', 'attendance', 'progress', 'reports', 'documents', 'info'].map((tab) => (
+                        {['overview', 'portfolio', 'achievements', 'attendance', 'progress', 'reports', 'documents', 'info', 'fees'].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
@@ -503,6 +516,39 @@ export const StudentProfile = () => {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    )}
+                    {activeTab === 'fees' && (
+                        <div className="card">
+                            <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
+                                <Wallet className="text-primary-600" size={20} />
+                                Financial Records
+                            </h3>
+                            <div className="space-y-4">
+                                {studentFees.length > 0 ? studentFees.map(fee => (
+                                    <div key={fee.id} className="p-4 bg-gray-50 rounded-2xl flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`p-3 rounded-xl ${fee.status === 'PAID' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                                                <Wallet size={20} />
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-gray-900">{fee.title}</p>
+                                                <p className="text-xs text-gray-500">Due: {new Date(fee.dueDate).toLocaleDateString()}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-black text-gray-900">₦{fee.amount.toLocaleString()}</p>
+                                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${fee.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                {fee.status}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <div className="text-center py-12 text-gray-400">
+                                        <p>No fee records found for this student.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}

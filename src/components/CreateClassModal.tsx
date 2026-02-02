@@ -193,13 +193,15 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({ isOpen, onCl
                                     )}
                                     <div className="flex items-center gap-2 mb-1">
                                         <User size={14} className="text-gray-400" />
-                                        <input
-                                            type="text"
-                                            placeholder="Assign Role (e.g. Mentor)"
+                                        <select
                                             value={assignment.role}
                                             onChange={(e) => handleRoleChange(index, e.target.value)}
-                                            className="text-xs font-bold bg-transparent border-none focus:ring-0 p-0 text-gray-600 placeholder-gray-400 w-full"
-                                        />
+                                            className="text-xs font-bold bg-transparent border-none focus:ring-0 p-0 text-gray-600 placeholder-gray-400 w-full outline-none"
+                                        >
+                                            <option value="">Select Role</option>
+                                            <option value="Islamiyyah Teacher">Islamiyyah Teacher</option>
+                                            <option value="Conventional Teacher">Conventional Teacher</option>
+                                        </select>
                                     </div>
                                     <select
                                         value={assignment.teacherId}

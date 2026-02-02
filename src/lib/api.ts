@@ -279,6 +279,11 @@ class ApiClient {
         return response.data;
     }
 
+    async getStudents() {
+        const response = await this.client.get('/students');
+        return response.data;
+    }
+
     async getStudentById(id: string) {
         const response = await this.client.get(`/students/${id}`);
         return response.data;
@@ -296,6 +301,11 @@ class ApiClient {
 
     async getTeacherStudents() {
         const response = await this.client.get('/students/teacher/my-students');
+        return response.data;
+    }
+
+    async getParentChildren() {
+        const response = await this.client.get('/students/parent/my-children');
         return response.data;
     }
 
@@ -332,6 +342,11 @@ class ApiClient {
 
     async getStudentReports(studentId: string) {
         const response = await this.client.get(`/reports/student/${studentId}`);
+        return response.data;
+    }
+
+    async getParentReports() {
+        const response = await this.client.get('/reports/parent/my-children');
         return response.data;
     }
 
@@ -411,6 +426,48 @@ class ApiClient {
 
     async updateAttendanceRecord(id: string, status: string, notes?: string) {
         const response = await this.client.patch(`/attendance/${id}`, { status, notes });
+        return response.data;
+    }
+
+    // Fees
+    async getFees(params?: { studentId?: string, summary?: string }) {
+        const response = await this.client.get('/fees', { params });
+        return response.data;
+    }
+
+    async createFee(data: any) {
+        const response = await this.client.post('/fees', data);
+        return response.data;
+    }
+
+    async updateFee(id: string, data: any) {
+        const response = await this.client.patch(`/fees/${id}`, data);
+        return response.data;
+    }
+
+    async deleteFee(id: string) {
+        const response = await this.client.delete(`/fees/${id}`);
+        return response.data;
+    }
+
+    // Announcements
+    async getAnnouncements() {
+        const response = await this.client.get('/announcements');
+        return response.data;
+    }
+
+    async createAnnouncement(data: any) {
+        const response = await this.client.post('/announcements', data);
+        return response.data;
+    }
+
+    async updateAnnouncement(id: string, data: any) {
+        const response = await this.client.patch(`/announcements/${id}`, data);
+        return response.data;
+    }
+
+    async deleteAnnouncement(id: string) {
+        const response = await this.client.delete(`/announcements/${id}`);
         return response.data;
     }
 

@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import {
     Users,
     BookOpen,
-    Settings,
     Shield,
     UserPlus,
     PlusCircle,
     Activity,
-    Calendar
+    Calendar,
+    Wallet,
+    Megaphone
 } from 'lucide-react';
 import api from '../lib/api';
 import { DashboardLayout } from '../components/DashboardLayout';
@@ -152,13 +153,29 @@ export const AdminDashboard = () => {
                             </div>
                         </button>
 
-                        <button className="card hover:shadow-md transition-shadow flex items-center space-x-4 text-left group">
-                            <div className="p-3 bg-gray-50 text-gray-600 rounded-lg group-hover:bg-gray-800 group-hover:text-white transition-colors">
-                                <Settings size={24} />
+                        <button
+                            onClick={() => navigate('/admin/fees')}
+                            className="card hover:shadow-md transition-shadow flex items-center space-x-4 text-left group"
+                        >
+                            <div className="p-3 bg-red-50 text-red-600 rounded-lg group-hover:bg-red-600 group-hover:text-white transition-colors">
+                                <Wallet size={24} />
                             </div>
                             <div>
-                                <p className="font-bold text-gray-900 text-sm">System Logs</p>
-                                <p className="text-xs text-gray-500 italic">View audit history</p>
+                                <p className="font-bold text-gray-900 text-sm">Fee Records</p>
+                                <p className="text-xs text-gray-500 italic">Billings & payments</p>
+                            </div>
+                        </button>
+
+                        <button
+                            onClick={() => navigate('/admin/announcements')}
+                            className="card hover:shadow-md transition-shadow flex items-center space-x-4 text-left group"
+                        >
+                            <div className="p-3 bg-amber-50 text-amber-600 rounded-lg group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                                <Megaphone size={24} />
+                            </div>
+                            <div>
+                                <p className="font-bold text-gray-900 text-sm">Social Feed</p>
+                                <p className="text-xs text-gray-500 italic">Post announcements</p>
                             </div>
                         </button>
                     </div>

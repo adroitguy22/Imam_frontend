@@ -20,6 +20,8 @@ import { StudentProfile } from './pages/StudentProfile';
 import { AttendanceRegister } from './pages/AttendanceRegister';
 import ChatWidget from './components/ChatWidget';
 import ChatMonitoring from './pages/admin/ChatMonitoring';
+import { AnnouncementManagement } from './pages/admin/AnnouncementManagement';
+import { FeeManagement } from './pages/admin/FeeManagement';
 
 const StudentDashboard = () => (
   <DashboardLayout>
@@ -198,6 +200,22 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['ADMIN']}>
                 <ChatMonitoring />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/announcements"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AnnouncementManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/fees"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <FeeManagement />
               </ProtectedRoute>
             }
           />
