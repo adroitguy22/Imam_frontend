@@ -6,13 +6,13 @@ const API_BASE_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_
 let toastCallback: ((message: string, type: 'error' | 'success' | 'info' | 'warning') => void) | null = null;
 
 export const setToastCallback = (callback: typeof toastCallback) => {
-  toastCallback = callback;
+    toastCallback = callback;
 };
 
 const showToast = (message: string, type: 'error' | 'success' | 'info' | 'warning' = 'error') => {
-  if (toastCallback) {
-    toastCallback(message, type);
-  }
+    if (toastCallback) {
+        toastCallback(message, type);
+    }
 };
 
 class ApiClient {
@@ -232,7 +232,6 @@ class ApiClient {
     }
 
     // User Management
-    // User Management
     async getUsers(role?: string) {
         const response = await this.client.get('/users', { params: { role } });
         return response.data;
@@ -261,6 +260,16 @@ class ApiClient {
 
     async createClass(data: any) {
         const response = await this.client.post('/classes', data);
+        return response.data;
+    }
+
+    async updateClass(id: string, data: any) {
+        const response = await this.client.put(`/classes/${id}`, data);
+        return response.data;
+    }
+
+    async deleteClass(id: string) {
+        const response = await this.client.delete(`/classes/${id}`);
         return response.data;
     }
 
@@ -323,6 +332,11 @@ class ApiClient {
 
     async getStudentReports(studentId: string) {
         const response = await this.client.get(`/reports/student/${studentId}`);
+        return response.data;
+    }
+
+    async generateBulkReports(filters: any) {
+        const response = await this.client.post('/reports/bulk', filters);
         return response.data;
     }
 

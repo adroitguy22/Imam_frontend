@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import api from '../../lib/api';
 import { DashboardLayout } from '../../components/DashboardLayout';
+import { CreateUserModal } from '../../components/CreateUserModal';
 
 export const UserManagement = () => {
     const navigate = useNavigate();
@@ -19,6 +20,7 @@ export const UserManagement = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('ALL');
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -56,39 +58,8 @@ export const UserManagement = () => {
         }
     };
 
-    const handleCreateUser = async () => {
-        try {
-            const firstName = prompt('Enter First Name:');
-            if (!firstName) return;
-
-            const lastName = prompt('Enter Last Name:');
-            if (!lastName) return;
-
-            const email = prompt('Enter Email:');
-            if (!email) return;
-
-            const password = prompt('Enter Temporary Password (min 6 chars):', '123456');
-            if (!password) return;
-
-            const role = prompt('Enter Role (ADMIN, TEACHER, PARENT, STUDENT):', 'TEACHER');
-            if (!role) return;
-
-            const newUser = await api.register({
-                firstName,
-                lastName,
-                email,
-                password,
-                role: role.toUpperCase()
-            });
-
-            if (newUser) {
-                alert('User created successfully!');
-                fetchUsers();
-            }
-        } catch (error: any) {
-            console.error('Failed to create user', error);
-            alert(error.response?.data?.error || 'Failed to create user');
-        }
+    const handleCreateUser = () => {
+        setIsCreateModalOpen(true);
     };
 
     return (
@@ -254,6 +225,14 @@ export const UserManagement = () => {
                     )}
                 </div>
             </div>
+
+            <CreateUserModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSuccess={() => {
+                    fetchUsers();
+                }}
+            />
         </DashboardLayout>
     );
 };

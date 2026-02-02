@@ -82,17 +82,26 @@ export const ClassDetails = () => {
                             </div>
                         </div>
 
-                        <div className="p-4 bg-gray-50 rounded-lg flex items-center space-x-4">
+                        <div className="p-4 bg-gray-50 rounded-lg flex items-start space-x-4">
                             <div className="p-3 bg-white rounded-lg shadow-sm text-blue-600">
                                 <User size={24} />
                             </div>
-                            <div>
-                                <p className="text-sm text-gray-500 font-medium">Teacher</p>
-                                <p className="text-lg font-bold text-gray-900">
-                                    {classData.teacher?.user
-                                        ? `${classData.teacher.user.firstName} ${classData.teacher.user.lastName}`
-                                        : 'Unassigned'}
-                                </p>
+                            <div className="flex-1">
+                                <p className="text-sm text-gray-500 font-medium mb-2">Teachers</p>
+                                <div className="space-y-2">
+                                    {classData.teachers && classData.teachers.length > 0 ? (
+                                        classData.teachers.map((t: any) => (
+                                            <div key={t.id} className="flex flex-col">
+                                                <span className="text-xs text-primary-600 font-semibold">{t.role}</span>
+                                                <span className="text-sm font-bold text-gray-900">
+                                                    {t.teacher?.user?.firstName} {t.teacher?.user?.lastName}
+                                                </span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-sm font-bold text-gray-400 italic">Unassigned</p>
+                                    )}
+                                </div>
                             </div>
                         </div>
 

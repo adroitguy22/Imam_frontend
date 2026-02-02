@@ -3,12 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, Phone, Shield, CheckCircle, XCircle } from 'lucide-react';
 import api from '../../lib/api';
 import { DashboardLayout } from '../../components/DashboardLayout';
+import { ResetPasswordModal } from '../../components/ResetPasswordModal';
+import { EditUserModal } from '../../components/EditUserModal';
 
 export const UserDetails = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [user, setUser] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchUserDetails = async () => {
@@ -87,10 +91,16 @@ export const UserDetails = () => {
                                 </div>
 
                                 <div className="flex space-x-3">
-                                    <button className="btn bg-white border border-gray-200 text-gray-700 hover:bg-gray-50">
+                                    <button
+                                        onClick={() => setIsResetModalOpen(true)}
+                                        className="btn bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                                    >
                                         Reset Password
                                     </button>
-                                    <button className="btn btn-primary">
+                                    <button
+                                        onClick={() => setIsEditModalOpen(true)}
+                                        className="btn btn-primary"
+                                    >
                                         Edit Profile
                                     </button>
                                 </div>
@@ -125,6 +135,31 @@ export const UserDetails = () => {
 
                 </div>
             </div>
+
+            <ResetPasswordModal
+                isOpen={isResetModalOpen}
+                onClose={() => setIsResetModalOpen(false)}
+                userId={user.id}
+                userName={`${user.firstName} ${user.lastName}`}
+            />
+
+            <EditUserModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                onSuccess={() => {
+                    const fetchUserDetails = async () => {
+                        if (!id) return;
+                        try {
+                            const data = await api.getUser(id);
+                            setUser(data);
+                        } catch (err) {
+                            console.error('Failed to refresh user details', err);
+                        }
+                    };
+                    fetchUserDetails();
+                }}
+                user={user}
+            />
         </DashboardLayout>
     );
 };

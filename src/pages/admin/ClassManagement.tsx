@@ -9,16 +9,23 @@ import {
     Layers,
     Search,
     MoreVertical,
-    ExternalLink
+    ExternalLink,
+    Edit,
+    Trash
 } from 'lucide-react';
 import api from '../../lib/api';
 import { DashboardLayout } from '../../components/DashboardLayout';
+import { CreateClassModal } from '../../components/CreateClassModal';
+import { EditClassModal } from '../../components/EditClassModal';
 
 export const ClassManagement = () => {
     const navigate = useNavigate();
     const [classes, setClasses] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedClass, setSelectedClass] = useState<any>(null);
 
     useEffect(() => {
         fetchClasses();
@@ -36,64 +43,32 @@ export const ClassManagement = () => {
         }
     };
 
-    const handleCreateClass = async () => {
-        try {
-            const name = prompt('Enter Class Name (e.g. Primary 3A):');
-            if (!name) return;
+    const handleCreateClass = () => {
+        setIsCreateModalOpen(true);
+    };
 
-            const level = prompt('Enter Level (e.g. Primary 3):');
-            if (!level) return;
+    const handleEditClass = (cls: any) => {
+        setSelectedClass(cls);
+        setIsEditModalOpen(true);
+    };
 
-            const academicYear = prompt('Enter Academic Year (e.g. 2024/2025):', '2024/2025');
-            if (!academicYear) return;
-
-            const capacity = parseInt(prompt('Enter Capacity:', '30') || '30');
-
-            // Fetch teachers to let admin pick one (simplified for now: asking for teacher list)
-            const teachers = await api.getUsers('TEACHER');
-            if (teachers.length === 0) {
-                if (!confirm('No teachers found. Create class without an assigned teacher?')) return;
-            }
-
-            let teacherId = null;
-            if (teachers.length > 0) {
-                const teacherOptions = teachers.map((t: any, i: number) => `${i + 1}. ${t.firstName} ${t.lastName}`).join('\n');
-                const selection = prompt(`Select Teacher (enter number):\n${teacherOptions}\n(Leave empty for unassigned)`);
-                if (selection) {
-                    const index = parseInt(selection) - 1;
-                    if (teachers[index]) {
-                        if (teachers[index].teacher?.id) {
-                            teacherId = teachers[index].teacher.id;
-                        } else {
-                            alert('Warning: This user has the TEACHER role but is missing a specialized Teacher profile. Assignment might fail.');
-                            teacherId = teachers[index].id; // Fallback to user ID which will likely fail on backend due to FK, but at least we're aware.
-                        }
-                    }
-                }
-            }
-
-            const newClass = await api.createClass({
-                name,
-                level,
-                academicYear,
-                capacity,
-                teacherId
-            });
-
-            if (newClass) {
-                alert('Class created successfully!');
+    const handleDeleteClass = async (id: string) => {
+        if (confirm('Are you sure you want to delete this class? This cannot be undone.')) {
+            try {
+                await api.deleteClass(id);
                 fetchClasses();
+            } catch (err) {
+                console.error('Failed to delete class', err);
             }
-        } catch (error: any) {
-            console.error('Failed to create class', error);
-            alert(error.response?.data?.error || 'Failed to create class');
         }
     };
 
     const filteredClasses = classes.filter(cls =>
         cls.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         cls.level.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (cls.teacher?.user && `${cls.teacher.user.firstName} ${cls.teacher.user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()))
+        (cls.teachers && cls.teachers.some((t: any) =>
+            t.teacher?.user && `${t.teacher.user.firstName} ${t.teacher.user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()))
+        )
     );
 
     return (
@@ -151,20 +126,57 @@ export const ClassManagement = () => {
                                         <span>Level: {cls.level}</span>
                                     </p>
                                 </div>
-                                <button className="p-1 text-gray-400 hover:text-gray-900">
-                                    <MoreVertical size={20} />
-                                </button>
+                                <div className="relative group/menu">
+                                    <button
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="p-1 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all"
+                                    >
+                                        <MoreVertical size={20} />
+                                    </button>
+
+                                    <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-10 hidden group-hover/menu:block">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleEditClass(cls);
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                                        >
+                                            <Edit size={16} className="text-blue-500" />
+                                            <span>Edit Class</span>
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteClass(cls.id);
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 border-t border-gray-50"
+                                        >
+                                            <Trash size={16} />
+                                            <span>Delete Class</span>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="space-y-3">
-                                <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                                    <div className="flex items-center space-x-2 text-sm text-gray-600">
-                                        <BookOpen size={16} className="text-primary-500" />
-                                        <span>Teacher:</span>
+                                <div className="space-y-2 py-2 px-3 bg-gray-50 rounded-lg">
+                                    <div className="flex items-center space-x-2 text-xs font-semibold text-gray-500 mb-1">
+                                        <BookOpen size={14} className="text-primary-500" />
+                                        <span>Teachers:</span>
                                     </div>
-                                    <span className="text-sm font-bold text-gray-900">
-                                        {cls.teacher?.user ? `${cls.teacher.user.firstName} ${cls.teacher.user.lastName}` : 'Unassigned'}
-                                    </span>
+                                    {cls.teachers && cls.teachers.length > 0 ? (
+                                        cls.teachers.map((t: any) => (
+                                            <div key={t.id} className="flex justify-between items-center text-sm">
+                                                <span className="text-gray-600 italic text-xs">{t.role}:</span>
+                                                <span className="font-bold text-gray-900">
+                                                    {t.teacher?.user?.firstName} {t.teacher?.user?.lastName}
+                                                </span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-sm font-medium text-gray-400 italic text-center py-1">Unassigned</div>
+                                    )}
                                 </div>
 
                                 <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
@@ -203,6 +215,26 @@ export const ClassManagement = () => {
                     </div>
                 )}
             </div>
+
+            <CreateClassModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSuccess={() => {
+                    fetchClasses();
+                }}
+            />
+
+            <EditClassModal
+                isOpen={isEditModalOpen}
+                onClose={() => {
+                    setIsEditModalOpen(false);
+                    setSelectedClass(null);
+                }}
+                onSuccess={() => {
+                    fetchClasses();
+                }}
+                classData={selectedClass}
+            />
         </DashboardLayout>
     );
 };

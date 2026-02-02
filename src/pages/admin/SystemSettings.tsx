@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import api from '../../lib/api';
 import { DashboardLayout } from '../../components/DashboardLayout';
+import { CreateTermModal } from '../../components/CreateTermModal';
+import { CreateDomainModal } from '../../components/CreateDomainModal';
 
 export const SystemSettings = () => {
     const navigate = useNavigate();
@@ -21,6 +23,8 @@ export const SystemSettings = () => {
     const [domains, setDomains] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [isTermModalOpen, setIsTermModalOpen] = useState(false);
+    const [isDomainModalOpen, setIsDomainModalOpen] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -47,50 +51,12 @@ export const SystemSettings = () => {
         setTimeout(() => setMessage(null), 3000);
     };
 
-    const handleAddDomain = async () => {
-        try {
-            const name = prompt('Enter Domain Name (e.g. Cognitive Skills):');
-            if (!name) return;
-
-            const category = prompt('Enter Category (ACADEMIC, COGNITIVE, COMMUNICATION, CHARACTER):', 'COGNITIVE');
-            if (!category) return;
-
-            const domain = await api.createSkillDomain({
-                name,
-                category,
-                description: `Description for ${name}`,
-                assessmentCriteria: 'Criteria for levels 1-5',
-                levelDescriptions: '[]'
-            });
-
-            setDomains([...domains, domain]);
-            showMessage('success', 'Skill domain created successfully!');
-        } catch (error: any) {
-            showMessage('error', error.response?.data?.error || 'Failed to create domain');
-        }
+    const handleAddDomain = () => {
+        setIsDomainModalOpen(true);
     };
 
-    const handleAddTerm = async () => {
-        try {
-            const name = prompt('Enter Term Name (e.g. First Term 2025):');
-            if (!name) return;
-
-            const academicYear = prompt('Enter Academic Year (e.g. 2024/2025):', '2024/2025');
-            if (!academicYear) return;
-
-            const term = await api.createTerm({
-                name,
-                academicYear,
-                startDate: new Date().toISOString().split('T')[0],
-                endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                isActive: false
-            });
-
-            setTerms([...terms, term]);
-            showMessage('success', 'Academic term created successfully!');
-        } catch (error: any) {
-            showMessage('error', error.response?.data?.error || 'Failed to create term');
-        }
+    const handleAddTerm = () => {
+        setIsTermModalOpen(true);
     };
 
     const handleUpdateDomain = async (id: string, domainData: any) => {
@@ -361,6 +327,24 @@ export const SystemSettings = () => {
                     </div>
                 )}
             </div>
+
+            <CreateTermModal
+                isOpen={isTermModalOpen}
+                onClose={() => setIsTermModalOpen(false)}
+                onSuccess={(term) => {
+                    setTerms(prev => [...prev, term]);
+                    showMessage('success', 'Academic term created successfully!');
+                }}
+            />
+
+            <CreateDomainModal
+                isOpen={isDomainModalOpen}
+                onClose={() => setIsDomainModalOpen(false)}
+                onSuccess={(domain) => {
+                    setDomains(prev => [...prev, domain]);
+                    showMessage('success', 'Skill domain created successfully!');
+                }}
+            />
         </DashboardLayout>
     );
 };

@@ -28,6 +28,7 @@ export const Messaging = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [conversations, setConversations] = useState<any[]>([]); // simplified for now
+    const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
     const [selectedUser, setSelectedUser] = useState<string | null>(null); // userId
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -39,7 +40,20 @@ export const Messaging = () => {
         // This is a simplified approach. In a real app, you'd list users to chat with.
         // We will fetch "users" to chat with based on role (e.g. parent sees teachers)
         fetchUsers();
+        fetchUnreadCounts();
+
+        const interval = setInterval(fetchUnreadCounts, 30000); // Check every 30s
+        return () => clearInterval(interval);
     }, []);
+
+    const fetchUnreadCounts = async () => {
+        try {
+            const counts = await api.request('GET', '/messages/unread-counts-grouped');
+            setUnreadCounts(counts);
+        } catch (err) {
+            console.error("Failed to load unread counts", err);
+        }
+    };
 
     const fetchUsers = async () => {
         try {
@@ -62,6 +76,7 @@ export const Messaging = () => {
             // Mark as read
             await api.request('PATCH', `/messages/mark-as-read/${userId}`);
             fetchUnreadCount(); // Update the sidebar badge
+            fetchUnreadCounts(); // Update individual counts
 
             scrollToBottom();
         } catch (err) {
@@ -112,7 +127,14 @@ export const Messaging = () => {
                                 {u.firstName[0]}
                             </div>
                             <div>
-                                <p className="font-semibold text-gray-900">{u.firstName} {u.lastName}</p>
+                                <div className="flex justify-between items-center w-full">
+                                    <p className="font-semibold text-gray-900">{u.firstName} {u.lastName}</p>
+                                    {unreadCounts[u.id] > 0 && (
+                                        <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                                            {unreadCounts[u.id]}
+                                        </span>
+                                    )}
+                                </div>
                                 <p className="text-xs text-gray-500 capitalize">{u.role.toLowerCase()}</p>
                             </div>
                         </div>
