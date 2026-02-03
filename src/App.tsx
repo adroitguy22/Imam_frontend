@@ -9,6 +9,8 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 
 import { AdminDashboard } from './pages/AdminDashboard';
 import { ParentDashboard } from './pages/ParentDashboard';
+import { Lessons } from './pages/Lessons';
+import { Analytics } from './pages/Analytics';
 import { UserManagement } from './pages/admin/UserManagement';
 import { UserDetails } from './pages/admin/UserDetails';
 import { ClassManagement } from './pages/admin/ClassManagement';
@@ -110,6 +112,24 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
                 <AttendanceRegister />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/teacher/lessons"
+            element={
+              <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
+                <Lessons />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/teacher/analytics"
+            element={
+              <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
+                <Analytics />
               </ProtectedRoute>
             }
           />

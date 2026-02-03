@@ -86,6 +86,14 @@ export const TeacherDashboard = () => {
         );
     }
 
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const filteredStudents = students.filter(student =>
+        student.user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        student.user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        student.studentId.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <DashboardLayout>
             <div className="space-y-8">
@@ -133,13 +141,6 @@ export const TeacherDashboard = () => {
                     <div className="lg:col-span-2 space-y-4">
                         <div className="flex items-center justify-between">
                             <h2 className="text-lg font-bold text-gray-900">My Students</h2>
-                            <button
-                                onClick={() => navigate('/teacher/students')}
-                                className="text-sm text-primary-600 font-semibold hover:text-primary-700 flex items-center space-x-1"
-                            >
-                                <span>View All</span>
-                                <ArrowRight size={16} />
-                            </button>
                         </div>
 
                         <div className="card p-0 overflow-hidden">
@@ -150,6 +151,8 @@ export const TeacherDashboard = () => {
                                         type="text"
                                         placeholder="Search students..."
                                         className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-primary-500"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </div>
                                 <button className="p-2 text-gray-400 hover:text-gray-600">
@@ -158,12 +161,12 @@ export const TeacherDashboard = () => {
                             </div>
 
                             <div className="divide-y divide-gray-100 max-h-[400px] overflow-y-auto">
-                                {students.length > 0 ? (
-                                    students.map((student) => (
+                                {filteredStudents.length > 0 ? (
+                                    filteredStudents.map((student) => (
                                         <div
                                             key={student.id}
                                             className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors"
-                                            onClick={() => navigate(`/teacher/students/${student.id}`)}
+                                            onClick={() => navigate(`/student/${student.id}`)}
                                         >
                                             <div className="flex items-center space-x-3">
                                                 <div className="w-10 h-10 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold">
@@ -181,7 +184,7 @@ export const TeacherDashboard = () => {
                                     ))
                                 ) : (
                                     <div className="p-8 text-center text-gray-500">
-                                        No students found. Register one to get started!
+                                        {searchQuery ? 'No students found matching your search.' : 'No students found. Register one to get started!'}
                                     </div>
                                 )}
                             </div>

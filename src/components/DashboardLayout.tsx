@@ -77,7 +77,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
     const teacherLinks = [
         { icon: <Home size={20} />, label: 'Dashboard', href: '/teacher/dashboard' },
-        { icon: <Users size={20} />, label: 'My Students', href: '/teacher/students' },
         { icon: <BookOpen size={20} />, label: 'Lessons', href: '/teacher/lessons' },
         { icon: <CheckCircle size={20} />, label: 'Attendance', href: '/teacher/attendance' },
         { icon: <BarChart2 size={20} />, label: 'Analytics', href: '/teacher/analytics' },
