@@ -169,7 +169,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                         </button>
                         <div className="flex items-center space-x-3 pl-4 border-l border-gray-200">
                             <div className="hidden md:block text-right">
-                                <p className="text-sm font-semibold text-gray-900">{user?.firstName} {user?.lastName}</p>
+                                <p className="text-sm font-semibold text-gray-900">{user?.firstName || ''} {user?.lastName || ''}</p>
                                 <p className="text-xs text-gray-500 capitalize">{role}</p>
                             </div>
                             <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">

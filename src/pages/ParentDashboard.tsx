@@ -146,13 +146,13 @@ export const ParentDashboard = () => {
                                             <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
                                                 {child.user.firstName} {child.user.lastName}
                                             </h3>
-                                            <p className="text-sm text-gray-500">{child.studentId} • {child.class.name}</p>
+                                            <p className="text-sm text-gray-500">{child.studentId} • {child.class?.name || 'No class assigned'}</p>
                                         </div>
                                     </div>
                                     <div className="flex space-x-2">
                                         <div className="hidden md:flex flex-col items-end px-4 border-r border-gray-100">
                                             <span className="text-xs font-bold text-gray-400 uppercase">Current Term</span>
-                                            <span className="text-sm font-bold text-gray-900 italic">{child.activeTermName}</span>
+                                            <span className="text-sm font-bold text-gray-900 italic">{child.activeTermName || 'N/A'}</span>
                                         </div>
                                         <div className="hidden sm:flex flex-col items-end px-4 border-r border-gray-100">
                                             <span className="text-xs font-bold text-gray-400 uppercase">Fee Status</span>
@@ -287,14 +287,14 @@ export const ParentDashboard = () => {
                                     >
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-[10px] font-black uppercase text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                                                {report.term.name}
+                                                {report.term?.name || 'Term Report'}
                                             </span>
                                             <span className="text-[10px] font-bold text-gray-400">
                                                 {new Date(report.publishedAt).toLocaleDateString()}
                                             </span>
                                         </div>
-                                        <h4 className="font-bold text-gray-900 text-sm mb-1">{report.student.user.firstName}'s Report</h4>
-                                        <p className="text-xs text-gray-500 line-clamp-1">{report.summary}</p>
+                                        <h4 className="font-bold text-gray-900 text-sm mb-1">{report.student?.user?.firstName ? `${report.student.user.firstName}'s Report` : 'Student Report'}</h4>
+                                        <p className="text-xs text-gray-500 line-clamp-1">{report.summary || 'No summary available'}</p>
                                     </div>
                                 )) : (
                                     <div className="card text-center py-8 bg-gray-50 border-dashed border-2">
