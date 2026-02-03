@@ -14,7 +14,8 @@ import {
     BookOpen,
     CheckCircle,
     User,
-    MessageSquare
+    MessageSquare,
+    FileText
 } from 'lucide-react';
 import { SyncStatus } from './SyncStatus';
 import logo from '../assets/logo.jpeg';
@@ -78,6 +79,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     const teacherLinks = [
         { icon: <Home size={20} />, label: 'Dashboard', href: '/teacher/dashboard' },
         { icon: <BookOpen size={20} />, label: 'Lessons', href: '/teacher/lessons' },
+        { icon: <FileText size={20} />, label: 'Lesson Notes', href: '/teacher/lesson-notes' },
         { icon: <CheckCircle size={20} />, label: 'Attendance', href: '/teacher/attendance' },
         { icon: <BarChart2 size={20} />, label: 'Analytics', href: '/teacher/analytics' },
         { icon: <MessageSquare size={20} />, label: 'Messages', href: '/messaging' },

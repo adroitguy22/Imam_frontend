@@ -20,6 +20,7 @@ import { SignupPage } from './pages/SignupPage';
 import { Messaging } from './pages/Messaging';
 import { StudentProfile } from './pages/StudentProfile';
 import { AttendanceRegister } from './pages/AttendanceRegister';
+import { LessonNotes } from './pages/LessonNotes';
 import ChatWidget from './components/ChatWidget';
 import ChatMonitoring from './pages/admin/ChatMonitoring';
 import { AnnouncementManagement } from './pages/admin/AnnouncementManagement';
@@ -130,6 +131,15 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
                 <Analytics />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/teacher/lesson-notes"
+            element={
+              <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
+                <LessonNotes />
               </ProtectedRoute>
             }
           />

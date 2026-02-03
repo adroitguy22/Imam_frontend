@@ -532,6 +532,35 @@ class ApiClient {
         return response.data;
     }
 
+    // Lesson Notes
+    async generateLessonNotes(data: {
+        topic: string;
+        subject: string;
+        classLevel: string;
+        duration?: string;
+        objectives?: string[];
+        keyPoints?: string[];
+        additionalNotes?: string;
+    }) {
+        const response = await this.client.post('/lessons/generate', data, {
+            responseType: 'arraybuffer'
+        });
+        return response.data;
+    }
+
+    async previewLessonNotes(data: {
+        topic: string;
+        subject: string;
+        classLevel: string;
+        duration?: string;
+        objectives?: string[];
+        keyPoints?: string[];
+        additionalNotes?: string;
+    }) {
+        const response = await this.client.post('/lessons/preview', data);
+        return response.data;
+    }
+
     // Generic request method for custom endpoints
     async request(method: string, url: string, data?: any, config?: any) {
         const response = await this.client.request({
