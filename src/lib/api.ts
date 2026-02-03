@@ -62,6 +62,7 @@ class ApiClient {
 
         let isRefreshing = false;
         let failedQueue: any[] = [];
+        let isLoggingOut = false;
 
         const processQueue = (error: any, token: string | null = null) => {
             failedQueue.forEach((prom) => {
@@ -72,6 +73,24 @@ class ApiClient {
                 }
             });
             failedQueue = [];
+        };
+
+        const doLogout = () => {
+            if (isLoggingOut) return;
+            isLoggingOut = true;
+
+            import('../stores/authStore').then(({ useAuthStore }) => {
+                useAuthStore.getState().logout();
+                showToast('Your session has expired. Please log in again.', 'error');
+                // Only redirect if not already on login page
+                if (window.location.pathname !== '/login') {
+                    window.location.href = '/login';
+                }
+                // Reset flag after a delay to allow new sessions
+                setTimeout(() => {
+                    isLoggingOut = false;
+                }, 1000);
+            });
         };
 
         // Response interceptor to handle errors and token refresh
@@ -140,23 +159,14 @@ class ApiClient {
                             processQueue(null, accessToken);
                             return this.client(originalRequest);
                         } else {
-                            throw new Error('No refresh token available');
+                            // No refresh token - logout immediately
+                            processQueue(new Error('No refresh token available'), null);
+                            doLogout();
+                            return Promise.reject(new Error('No refresh token available'));
                         }
                     } catch (refreshError) {
                         processQueue(refreshError, null);
-
-                        // Centralized logout
-                        import('../stores/authStore').then(({ useAuthStore }) => {
-                            useAuthStore.getState().logout();
-                            showToast('Your session has expired. Please log in again.', 'error');
-                            // Use a small delay to ensure store state is updated before redirect
-                            setTimeout(() => {
-                                if (window.location.pathname !== '/login') {
-                                    window.location.href = '/login';
-                                }
-                            }, 100);
-                        });
-
+                        doLogout();
                         return Promise.reject(refreshError);
                     } finally {
                         isRefreshing = false;
