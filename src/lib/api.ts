@@ -60,6 +60,20 @@ class ApiClient {
             (error) => Promise.reject(error)
         );
 
+        let isRefreshing = false;
+        let failedQueue: any[] = [];
+
+        const processQueue = (error: any, token: string | null = null) => {
+            failedQueue.forEach((prom) => {
+                if (error) {
+                    prom.reject(error);
+                } else {
+                    prom.resolve(token);
+                }
+            });
+            failedQueue = [];
+        };
+
         // Response interceptor to handle errors and token refresh
         this.client.interceptors.response.use(
             (response) => response,
@@ -72,7 +86,21 @@ class ApiClient {
                 }
 
                 if (error.response?.status === 401 && !originalRequest._retry) {
+                    if (isRefreshing) {
+                        return new Promise((resolve, reject) => {
+                            failedQueue.push({ resolve, reject });
+                        })
+                            .then((token) => {
+                                originalRequest.headers['Authorization'] = `Bearer ${token}`;
+                                return this.client(originalRequest);
+                            })
+                            .catch((err) => {
+                                return Promise.reject(err);
+                            });
+                    }
+
                     originalRequest._retry = true;
+                    isRefreshing = true;
 
                     try {
                         let refreshToken = localStorage.getItem('refreshToken');
@@ -101,27 +129,45 @@ class ApiClient {
                             localStorage.setItem('accessToken', accessToken);
                             localStorage.setItem('refreshToken', newRefreshToken);
 
-                            originalRequest.headers = originalRequest.headers || {};
-                            if (originalRequest.headers.set) {
-                                originalRequest.headers.set('Authorization', `Bearer ${accessToken}`);
-                            } else {
-                                originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
-                            }
+                            // Update auth store as well if possible (optional but good practice)
+                            import('../stores/authStore').then(({ useAuthStore }) => {
+                                useAuthStore.setState({ accessToken, refreshToken: newRefreshToken });
+                            });
 
+                            this.client.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+                            originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
+
+                            processQueue(null, accessToken);
                             return this.client(originalRequest);
+                        } else {
+                            throw new Error('No refresh token available');
                         }
                     } catch (refreshError) {
-                        localStorage.removeItem('accessToken');
-                        localStorage.removeItem('refreshToken');
-                        localStorage.removeItem('user');
-                        showToast('Your session has expired. Please log in again.', 'error');
-                        window.location.href = '/login';
+                        processQueue(refreshError, null);
+
+                        // Centralized logout
+                        import('../stores/authStore').then(({ useAuthStore }) => {
+                            useAuthStore.getState().logout();
+                            showToast('Your session has expired. Please log in again.', 'error');
+                            // Use a small delay to ensure store state is updated before redirect
+                            setTimeout(() => {
+                                if (window.location.pathname !== '/login') {
+                                    window.location.href = '/login';
+                                }
+                            }, 100);
+                        });
+
                         return Promise.reject(refreshError);
+                    } finally {
+                        isRefreshing = false;
                     }
                 }
 
                 const message = getErrorMessage(error);
-                showToast(message, 'error');
+                // Don't show generic error toast for 401s as we handle them above
+                if (error.response?.status !== 401) {
+                    showToast(message, 'error');
+                }
                 return Promise.reject(error);
             }
         );
@@ -244,6 +290,11 @@ class ApiClient {
 
     async updateUser(id: string, data: any) {
         const response = await this.client.put(`/users/${id}`, data);
+        return response.data;
+    }
+
+    async deleteUser(id: string) {
+        const response = await this.client.delete(`/users/${id}`);
         return response.data;
     }
 

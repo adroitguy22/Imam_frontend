@@ -8,7 +8,8 @@ import {
     Shield,
     CheckCircle,
     XCircle,
-    Mail
+    Mail,
+    Trash2
 } from 'lucide-react';
 import api from '../../lib/api';
 import { DashboardLayout } from '../../components/DashboardLayout';
@@ -60,6 +61,20 @@ export const UserManagement = () => {
 
     const handleCreateUser = () => {
         setIsCreateModalOpen(true);
+    };
+
+    const handleDeleteUser = async (user: any) => {
+        if (!window.confirm(`Are you sure you want to delete ${user.firstName} ${user.lastName}? This action cannot be undone and will remove all related profiles.`)) {
+            return;
+        }
+
+        try {
+            await api.deleteUser(user.id);
+            fetchUsers();
+        } catch (err: any) {
+            console.error('Failed to delete user', err);
+            alert(err.response?.data?.error || 'Failed to delete user');
+        }
     };
 
     return (
@@ -204,6 +219,13 @@ export const UserManagement = () => {
                                                     title={user.isActive ? "Deactivate User" : "Activate User"}
                                                 >
                                                     <Shield size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteUser(user)}
+                                                    className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+                                                    title="Delete User"
+                                                >
+                                                    <Trash2 size={18} />
                                                 </button>
                                                 <button
                                                     onClick={() => navigate(`/admin/users/${user.id}`)}
