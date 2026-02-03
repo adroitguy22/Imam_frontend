@@ -15,7 +15,10 @@ import {
     Trash2,
     X,
     Check,
-    Wallet
+    Wallet,
+    TrendingUp,
+    TrendingDown,
+    Minus
 } from 'lucide-react';
 import api from '../lib/api';
 import { DashboardLayout } from '../components/DashboardLayout';
@@ -34,6 +37,9 @@ export const StudentProfile = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'overview');
     const [studentFees, setStudentFees] = useState<any[]>([]);
+    const [recentLogs, setRecentLogs] = useState<any[]>([]);
+    const [trends, setTrends] = useState<any[]>([]);
+    const [isDataLoading, setIsDataLoading] = useState(true);
 
     // Parent Management State
     const [isAddingParent, setIsAddingParent] = useState(false);
@@ -47,8 +53,25 @@ export const StudentProfile = () => {
             if (currentUser?.role !== 'TEACHER') {
                 fetchStudentFees();
             }
+            fetchAnalyticsData();
         }
-    }, [id]);
+    }, [id, currentUser]);
+
+    const fetchAnalyticsData = async () => {
+        setIsDataLoading(true);
+        try {
+            const [logs, trendData] = await Promise.all([
+                api.getStudentProgressLogs(id!),
+                api.getStudentProgressTrends(id!)
+            ]);
+            setRecentLogs(logs);
+            setTrends(trendData);
+        } catch (err) {
+            console.error('Failed to fetch analytics data', err);
+        } finally {
+            setIsDataLoading(false);
+        }
+    };
 
     const fetchStudentFees = async () => {
         try {
@@ -295,7 +318,38 @@ export const StudentProfile = () => {
                                         Recent Activity
                                     </h3>
                                     <div className="space-y-4">
-                                        <p className="text-gray-500 italic text-sm">No recent progress logs found.</p>
+                                        {isDataLoading ? (
+                                            <div className="flex justify-center py-8"><Loader2 className="animate-spin text-primary-500" /></div>
+                                        ) : recentLogs.length > 0 ? (
+                                            recentLogs.slice(0, 5).map((log) => (
+                                                <div key={log.id} className="flex gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors group">
+                                                    <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center shrink-0">
+                                                        <ClipboardList size={20} />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <p className="text-sm font-bold text-gray-900 truncate">{log.skillDomain.name}</p>
+                                                            <span className="text-[10px] text-gray-400">{new Date(log.assessmentDate).toLocaleDateString()}</span>
+                                                        </div>
+                                                        <p className="text-xs text-gray-500 line-clamp-1">{log.qualitativeNotes}</p>
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                            <div className="h-1 flex-1 bg-gray-100 rounded-full overflow-hidden">
+                                                                <div
+                                                                    className="h-full bg-primary-500 rounded-full transition-all"
+                                                                    style={{ width: `${(log.currentLevel / 5) * 100}%` }}
+                                                                ></div>
+                                                            </div>
+                                                            <span className="text-[10px] font-bold text-primary-700">Level {log.currentLevel}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="py-12 text-center">
+                                                <ClipboardList className="mx-auto text-gray-200 mb-2" size={48} />
+                                                <p className="text-gray-400 italic text-sm">No recent progress logs found.</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -321,6 +375,16 @@ export const StudentProfile = () => {
                                             <span className="font-bold text-gray-900">
                                                 {new Date(student.enrollmentDate).toLocaleDateString()}
                                             </span>
+                                        </div>
+                                        <div className="pt-3 border-t border-gray-100 mt-2">
+                                            <div className="flex justify-between text-xs mb-2">
+                                                <span className="text-gray-400 uppercase font-bold tracking-wider">Achievements</span>
+                                                <span className="font-black text-amber-600">{student._count?.badges || 0} Badges</span>
+                                            </div>
+                                            <div className="flex justify-between text-xs">
+                                                <span className="text-gray-400 uppercase font-bold tracking-wider">Portfolio</span>
+                                                <span className="font-black text-primary-600">{student._count?.portfolioItems || 0} Items</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -348,22 +412,144 @@ export const StudentProfile = () => {
                     )}
 
                     {activeTab === 'progress' && (
-                        <div className="card">
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-lg font-bold flex items-center gap-2">
-                                    <ClipboardList className="text-primary-600" size={20} />
-                                    Academic Progress
-                                </h3>
-                                {currentUser?.role !== 'PARENT' && (
-                                    <button
-                                        onClick={() => navigate('/teacher/log-progress', { state: { studentId: student.id } })}
-                                        className="btn btn-primary text-sm"
-                                    >
-                                        Add Progress Log
-                                    </button>
-                                )}
+                        <div className="space-y-6">
+                            {/* Stats Summary Header */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="card text-center p-6 border-none shadow-md bg-white">
+                                    <div className="flex items-center justify-center gap-2 text-primary-600 mb-2">
+                                        <TrendingUp size={20} />
+                                        <span className="text-xs font-black uppercase tracking-widest">Improving Skills</span>
+                                    </div>
+                                    <p className="text-3xl font-black text-gray-900">
+                                        {trends.filter(t => t.trend === 'improving').length}
+                                    </p>
+                                </div>
+                                <div className="card text-center p-6 border-none shadow-md bg-white">
+                                    <div className="flex items-center justify-center gap-2 text-gray-400 mb-2">
+                                        <Minus size={20} />
+                                        <span className="text-xs font-black uppercase tracking-widest">Stable</span>
+                                    </div>
+                                    <p className="text-3xl font-black text-gray-900">
+                                        {trends.filter(t => t.trend === 'stable').length}
+                                    </p>
+                                </div>
+                                <div className="card text-center p-6 border-none shadow-md bg-white">
+                                    <div className="flex items-center justify-center gap-2 text-amber-500 mb-2">
+                                        <AlertCircle size={20} />
+                                        <span className="text-xs font-black uppercase tracking-widest">Total Domains</span>
+                                    </div>
+                                    <p className="text-3xl font-black text-gray-900">{trends.length}</p>
+                                </div>
                             </div>
-                            <p className="text-gray-500 text-center py-12">Select "Overview" or check specific skill domains in the progress section.</p>
+
+                            <div className="card p-0 overflow-hidden border-none shadow-lg">
+                                <div className="p-6 border-b border-gray-50 flex items-center justify-between bg-white">
+                                    <div>
+                                        <h3 className="text-xl font-black text-gray-900 flex items-center gap-2">
+                                            <ClipboardList className="text-primary-600" size={24} />
+                                            Academic Progress Audit
+                                        </h3>
+                                        <p className="text-xs text-gray-500 font-medium">Real-time skill assessment benchmarks</p>
+                                    </div>
+                                    {currentUser?.role !== 'PARENT' && (
+                                        <button
+                                            onClick={() => navigate('/teacher/log-progress', { state: { studentId: student.id } })}
+                                            className="btn btn-primary flex items-center gap-2 text-sm shadow-xl shadow-primary-100"
+                                        >
+                                            <Plus size={18} />
+                                            Record Assessment
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="divide-y divide-gray-50 bg-white">
+                                    {isDataLoading ? (
+                                        <div className="flex justify-center py-20"><Loader2 className="animate-spin text-primary-500" size={40} /></div>
+                                    ) : trends.length > 0 ? (
+                                        trends.map((trend) => (
+                                            <div key={trend.skillDomainId} className="p-6 hover:bg-gray-50 transition-colors">
+                                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                                                    <div>
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <h4 className="text-lg font-bold text-gray-900">{trend.skillDomainName}</h4>
+                                                            <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded uppercase tracking-widest">
+                                                                {trend.category}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-xs text-gray-500">
+                                                            Last assessment: {new Date(trend.assessments[trend.assessments.length - 1].date).toLocaleDateString()} by {trend.assessments[trend.assessments.length - 1].teacherName}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="text-right">
+                                                            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Current Level</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={`text-2xl font-black ${trend.trend === 'improving' ? 'text-green-600' :
+                                                                    trend.trend === 'declining' ? 'text-red-600' : 'text-primary-600'
+                                                                    }`}>
+                                                                    {trend.currentLevel}
+                                                                </span>
+                                                                <div className={`p-1 rounded-lg ${trend.trend === 'improving' ? 'bg-green-100 text-green-600' :
+                                                                    trend.trend === 'declining' ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-400'
+                                                                    }`}>
+                                                                    {trend.trend === 'improving' ? <TrendingUp size={16} /> :
+                                                                        trend.trend === 'declining' ? <TrendingDown size={16} /> : <Minus size={16} />
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                                        <span>Progress Journey</span>
+                                                        <span>Target: 5.0</span>
+                                                    </div>
+                                                    <div className="h-4 bg-gray-100 rounded-full overflow-hidden flex">
+                                                        {trend.assessments.map((assessment: any, idx: number) => (
+                                                            <div
+                                                                key={idx}
+                                                                className={`h-full border-r border-white/20 transition-all duration-1000 ${trend.trend === 'improving' ? 'bg-green-500' :
+                                                                    trend.trend === 'declining' ? 'bg-red-500' : 'bg-primary-500'
+                                                                    }`}
+                                                                style={{
+                                                                    width: `${(assessment.level / 5) * 100 / trend.assessments.length}%`,
+                                                                    opacity: 0.3 + (idx / trend.assessments.length) * 0.7
+                                                                }}
+                                                                title={`Assessment ${idx + 1}: ${assessment.level}`}
+                                                            ></div>
+                                                        ))}
+                                                        <div
+                                                            className="h-full bg-primary-600 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]"
+                                                            style={{
+                                                                width: `${(trend.currentLevel / 5) * 100}%`,
+                                                                marginLeft: `-${(trend.currentLevel / 5) * 100}%`
+                                                            }}
+                                                        ></div>
+                                                    </div>
+                                                    <div className="flex justify-between mt-1">
+                                                        <span className="text-[10px] font-medium text-gray-400">Baseline: {trend.assessments[0].level}</span>
+                                                        <span className={`text-[10px] font-bold ${trend.improvement > 0 ? 'text-green-600' : 'text-gray-500'}`}>
+                                                            {trend.improvement > 0 ? `+${trend.improvement}` : trend.improvement} overall
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="py-20 text-center">
+                                            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-dashed border-gray-200">
+                                                <TrendingUp className="text-gray-300" size={32} />
+                                            </div>
+                                            <h4 className="text-lg font-bold text-gray-900">No Assessment Data</h4>
+                                            <p className="text-sm text-gray-500 max-w-xs mx-auto mt-2">
+                                                Start recording assessments for skill domains to visualize the student's academic growth.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     )}
 

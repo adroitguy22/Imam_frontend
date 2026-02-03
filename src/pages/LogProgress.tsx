@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
     ArrowLeft,
     Save,
@@ -15,6 +15,7 @@ import { DashboardLayout } from '../components/DashboardLayout';
 
 export const LogProgress = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [students, setStudents] = useState<any[]>([]);
     const [domains, setDomains] = useState<any[]>([]);
     const [terms, setTerms] = useState<any[]>([]);
@@ -24,7 +25,7 @@ export const LogProgress = () => {
 
     // Form state
     const [formData, setFormData] = useState({
-        studentId: '',
+        studentId: location.state?.studentId || '',
         skillDomainId: '',
         termId: '',
         currentLevel: 3,
