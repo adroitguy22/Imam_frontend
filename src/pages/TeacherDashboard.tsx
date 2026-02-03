@@ -46,6 +46,7 @@ export const TeacherDashboard = () => {
     const [classes, setClasses] = useState<{ id: string; name: string }[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
 
     const fetchDashboardData = async () => {
@@ -86,7 +87,6 @@ export const TeacherDashboard = () => {
         );
     }
 
-    const [searchQuery, setSearchQuery] = useState('');
 
     const filteredStudents = students.filter(student =>
         student.user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
