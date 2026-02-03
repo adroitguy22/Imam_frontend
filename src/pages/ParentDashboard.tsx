@@ -26,16 +26,25 @@ export const ParentDashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [studentsData, announcementsData, summaryData, reportsData] = await Promise.all([
+                // Fetch each resource independently to handle failures gracefully
+                const [studentsData, announcementsData, summaryData, reportsData] = await Promise.allSettled([
                     api.getParentChildren(),
                     api.getAnnouncements(),
                     api.getFees({ summary: 'true' }),
                     api.getParentReports()
                 ]);
-                setChildren(studentsData);
-                setAnnouncements(announcementsData);
-                setFeeSummary(summaryData);
-                setReports(reportsData);
+
+                // Handle each result independently
+                setChildren(studentsData.status === 'fulfilled' ? studentsData.value : []);
+                setAnnouncements(announcementsData.status === 'fulfilled' ? announcementsData.value : []);
+                setFeeSummary(summaryData.status === 'fulfilled' ? summaryData.value : { total: 0, paid: 0, pending: 0 });
+                setReports(reportsData.status === 'fulfilled' ? reportsData.value : []);
+
+                // Log any errors for debugging
+                if (studentsData.status === 'rejected') console.error('Failed to fetch children:', studentsData.reason);
+                if (announcementsData.status === 'rejected') console.error('Failed to fetch announcements:', announcementsData.reason);
+                if (summaryData.status === 'rejected') console.error('Failed to fetch fee summary:', summaryData.reason);
+                if (reportsData.status === 'rejected') console.error('Failed to fetch reports:', reportsData.reason);
             } catch (err) {
                 console.error('Failed to fetch dashboard data', err);
             } finally {
@@ -107,7 +116,22 @@ export const ParentDashboard = () => {
                     {/* Children Selection / Summary */}
                     <div className="lg:col-span-2 space-y-6">
                         <h2 className="text-lg font-bold text-gray-900">My Children</h2>
-                        {children.map((child) => (
+                        {children.length === 0 ? (
+                            <div className="card text-center py-12 bg-blue-50 border-blue-200">
+                                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Users size={32} className="text-blue-600" />
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-2">No Children Linked Yet</h3>
+                                <p className="text-gray-600 mb-4">
+                                    Your account is not yet linked to any students. Please contact the school administration to link your children to your account.
+                                </p>
+                                <div className="inline-flex items-center gap-2 text-sm text-blue-700 bg-blue-100 px-4 py-2 rounded-lg">
+                                    <Shield size={16} />
+                                    Contact school office for assistance
+                                </div>
+                            </div>
+                        ) : (
+                            children.map((child) => (
                             <div
                                 key={child.id}
                                 onClick={() => navigate(`/student/${child.id}`)}
@@ -203,7 +227,8 @@ export const ParentDashboard = () => {
                                     </button>
                                 </div>
                             </div>
-                        ))}
+                        ))
+                        )}
                     </div>
 
                     {/* Right Sidebar - Announcements & Communications */}
