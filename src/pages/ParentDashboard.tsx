@@ -34,11 +34,11 @@ export const ParentDashboard = () => {
                     api.getParentReports()
                 ]);
 
-                // Handle each result independently
-                setChildren(studentsData.status === 'fulfilled' ? studentsData.value : []);
-                setAnnouncements(announcementsData.status === 'fulfilled' ? announcementsData.value : []);
-                setFeeSummary(summaryData.status === 'fulfilled' ? summaryData.value : { total: 0, paid: 0, pending: 0 });
-                setReports(reportsData.status === 'fulfilled' ? reportsData.value : []);
+                // Handle each result independently with validation
+                setChildren(studentsData.status === 'fulfilled' && Array.isArray(studentsData.value) ? studentsData.value : []);
+                setAnnouncements(announcementsData.status === 'fulfilled' && Array.isArray(announcementsData.value) ? announcementsData.value : []);
+                setFeeSummary(summaryData.status === 'fulfilled' && summaryData.value ? summaryData.value : { total: 0, paid: 0, pending: 0 });
+                setReports(reportsData.status === 'fulfilled' && Array.isArray(reportsData.value) ? reportsData.value : []);
 
                 // Log any errors for debugging
                 if (studentsData.status === 'rejected') console.error('Failed to fetch children:', studentsData.reason);
@@ -116,10 +116,10 @@ export const ParentDashboard = () => {
                     {/* Children Selection / Summary */}
                     <div className="lg:col-span-2 space-y-6">
                         <h2 className="text-lg font-bold text-gray-900">My Children</h2>
-                        {children.length === 0 ? (
+                        {!children || children.length === 0 ? (
                             <div className="card text-center py-12 bg-blue-50 border-blue-200">
                                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Users size={32} className="text-blue-600" />
+                                    <Shield size={32} className="text-blue-600" />
                                 </div>
                                 <h3 className="text-lg font-bold text-gray-900 mb-2">No Children Linked Yet</h3>
                                 <p className="text-gray-600 mb-4">
@@ -131,103 +131,118 @@ export const ParentDashboard = () => {
                                 </div>
                             </div>
                         ) : (
-                            children.map((child) => (
-                            <div
-                                key={child.id}
-                                onClick={() => navigate(`/student/${child.id}`)}
-                                className="card hover:shadow-md transition-shadow group cursor-pointer border-l-4 border-l-primary-500"
-                            >
-                                <div className="flex items-center justify-between p-2">
-                                    <div className="flex items-center space-x-4">
-                                        <div className="w-16 h-16 bg-primary-100 text-primary-700 rounded-2xl flex items-center justify-center text-xl font-bold">
-                                            {child.user.firstName[0]}{child.user.lastName[0]}
+                            children.map((child) => {
+                                // Skip invalid child entries
+                                if (!child || !child.id) return null;
+
+                                const childName = child.user?.firstName && child.user?.lastName
+                                    ? `${child.user.firstName} ${child.user.lastName}`
+                                    : 'Student';
+
+                                const initials = child.user?.firstName?.[0] && child.user?.lastName?.[0]
+                                    ? `${child.user.firstName[0]}${child.user.lastName[0]}`
+                                    : 'S';
+
+                                return (
+                                <div
+                                    key={child.id}
+                                    onClick={() => navigate(`/student/${child.id}`)}
+                                    className="card hover:shadow-md transition-shadow group cursor-pointer border-l-4 border-l-primary-500"
+                                >
+                                    <div className="flex items-center justify-between p-2">
+                                        <div className="flex items-center space-x-4">
+                                            <div className="w-16 h-16 bg-primary-100 text-primary-700 rounded-2xl flex items-center justify-center text-xl font-bold">
+                                                {initials}
+                                            </div>
+                                            <div>
+                                                <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
+                                                    {childName}
+                                                </h3>
+                                                <p className="text-sm text-gray-500">{child.studentId || ''} • {child.class?.name || 'No class assigned'}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
-                                                {child.user.firstName} {child.user.lastName}
-                                            </h3>
-                                            <p className="text-sm text-gray-500">{child.studentId} • {child.class?.name || 'No class assigned'}</p>
+                                        <div className="flex space-x-2">
+                                            <div className="hidden md:flex flex-col items-end px-4 border-r border-gray-100">
+                                                <span className="text-xs font-bold text-gray-400 uppercase">Current Term</span>
+                                                <span className="text-sm font-bold text-gray-900 italic">{child.activeTermName || 'N/A'}</span>
+                                            </div>
+                                            <div className="hidden sm:flex flex-col items-end px-4 border-r border-gray-100">
+                                                <span className="text-xs font-bold text-gray-400 uppercase">Fee Status</span>
+                                                {(() => {
+                                                    const outstanding = Array.isArray(child.fees)
+                                                        ? child.fees.reduce((acc: number, f: any) => f?.status === 'PENDING' ? acc + (f?.amount || 0) : acc, 0)
+                                                        : 0;
+                                                    return outstanding > 0 ? (
+                                                        <span className="text-sm font-bold text-red-600">₦{outstanding.toLocaleString()} Owed</span>
+                                                    ) : (
+                                                        <span className="text-sm font-bold text-green-600">Fees Paid</span>
+                                                    );
+                                                })()}
+                                            </div>
+                                            <button className="p-2 text-gray-400 group-hover:text-primary-600">
+                                                <ChevronRight size={24} />
+                                            </button>
                                         </div>
                                     </div>
-                                    <div className="flex space-x-2">
-                                        <div className="hidden md:flex flex-col items-end px-4 border-r border-gray-100">
-                                            <span className="text-xs font-bold text-gray-400 uppercase">Current Term</span>
-                                            <span className="text-sm font-bold text-gray-900 italic">{child.activeTermName || 'N/A'}</span>
-                                        </div>
-                                        <div className="hidden sm:flex flex-col items-end px-4 border-r border-gray-100">
-                                            <span className="text-xs font-bold text-gray-400 uppercase">Fee Status</span>
-                                            {(() => {
-                                                const outstanding = child.fees?.reduce((acc: number, f: any) => f.status === 'PENDING' ? acc + f.amount : acc, 0) || 0;
-                                                return outstanding > 0 ? (
-                                                    <span className="text-sm font-bold text-red-600">₦{outstanding.toLocaleString()} Owed</span>
-                                                ) : (
-                                                    <span className="text-sm font-bold text-green-600">Fees Paid</span>
-                                                );
-                                            })()}
-                                        </div>
-                                        <button className="p-2 text-gray-400 group-hover:text-primary-600">
-                                            <ChevronRight size={24} />
+
+                                    {/* Mini Stats for Child */}
+                                    <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-50">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/student/${child.id}`, { state: { activeTab: 'progress' } });
+                                            }}
+                                            className="text-center group/stat hover:bg-gray-50 p-2 rounded-xl transition-colors"
+                                        >
+                                            <div className="flex items-center justify-center space-x-1 text-primary-600 mb-1 group-hover/stat:scale-110 transition-transform">
+                                                <TrendingUp size={16} />
+                                                <span className="text-xs font-bold">Progress</span>
+                                            </div>
+                                            <p className="text-lg font-bold">View</p>
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/student/${child.id}`, { state: { activeTab: 'achievements' } });
+                                            }}
+                                            className="text-center border-x border-gray-50 group/stat hover:bg-gray-50 p-2 rounded-xl transition-colors"
+                                        >
+                                            <div className="flex items-center justify-center space-x-1 text-orange-600 mb-1 group-hover/stat:scale-110 transition-transform">
+                                                <Star size={16} />
+                                                <span className="text-xs font-bold">Level</span>
+                                            </div>
+                                            <p className="text-lg font-bold">View</p>
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/student/${child.id}`, { state: { activeTab: 'reports' } });
+                                            }}
+                                            className="text-center group/stat hover:bg-gray-50 p-2 rounded-xl transition-colors"
+                                        >
+                                            <div className="flex items-center justify-center space-x-1 text-blue-600 mb-1 group-hover/stat:scale-110 transition-transform">
+                                                <FileText size={16} />
+                                                <span className="text-xs font-bold">Reports</span>
+                                            </div>
+                                            <p className="text-lg font-bold">View</p>
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/student/${child.id}`, { state: { activeTab: 'fees' } });
+                                            }}
+                                            className="text-center group/stat hover:bg-gray-50 p-2 rounded-xl transition-colors"
+                                        >
+                                            <div className="flex items-center justify-center space-x-1 text-red-600 mb-1 group-hover/stat:scale-110 transition-transform">
+                                                <Wallet size={16} />
+                                                <span className="text-xs font-bold">Fees</span>
+                                            </div>
+                                            <p className="text-lg font-bold">View</p>
                                         </button>
                                     </div>
                                 </div>
-
-                                {/* Mini Stats for Child */}
-                                <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-50">
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigate(`/student/${child.id}`, { state: { activeTab: 'progress' } });
-                                        }}
-                                        className="text-center group/stat hover:bg-gray-50 p-2 rounded-xl transition-colors"
-                                    >
-                                        <div className="flex items-center justify-center space-x-1 text-primary-600 mb-1 group-hover/stat:scale-110 transition-transform">
-                                            <TrendingUp size={16} />
-                                            <span className="text-xs font-bold">Progress</span>
-                                        </div>
-                                        <p className="text-lg font-bold">View</p>
-                                    </button>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigate(`/student/${child.id}`, { state: { activeTab: 'achievements' } });
-                                        }}
-                                        className="text-center border-x border-gray-50 group/stat hover:bg-gray-50 p-2 rounded-xl transition-colors"
-                                    >
-                                        <div className="flex items-center justify-center space-x-1 text-orange-600 mb-1 group-hover/stat:scale-110 transition-transform">
-                                            <Star size={16} />
-                                            <span className="text-xs font-bold">Level</span>
-                                        </div>
-                                        <p className="text-lg font-bold">View</p>
-                                    </button>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigate(`/student/${child.id}`, { state: { activeTab: 'reports' } });
-                                        }}
-                                        className="text-center group/stat hover:bg-gray-50 p-2 rounded-xl transition-colors"
-                                    >
-                                        <div className="flex items-center justify-center space-x-1 text-blue-600 mb-1 group-hover/stat:scale-110 transition-transform">
-                                            <FileText size={16} />
-                                            <span className="text-xs font-bold">Reports</span>
-                                        </div>
-                                        <p className="text-lg font-bold">View</p>
-                                    </button>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigate(`/student/${child.id}`, { state: { activeTab: 'fees' } });
-                                        }}
-                                        className="text-center group/stat hover:bg-gray-50 p-2 rounded-xl transition-colors"
-                                    >
-                                        <div className="flex items-center justify-center space-x-1 text-red-600 mb-1 group-hover/stat:scale-110 transition-transform">
-                                            <Wallet size={16} />
-                                            <span className="text-xs font-bold">Fees</span>
-                                        </div>
-                                        <p className="text-lg font-bold">View</p>
-                                    </button>
-                                </div>
-                            </div>
-                        ))
+                            );
+                            }).filter(Boolean)
                         )}
                     </div>
 
@@ -241,7 +256,9 @@ export const ParentDashboard = () => {
                         </div>
 
                         <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200">
-                            {announcements.length > 0 ? announcements.map((ann) => (
+                            {announcements && announcements.length > 0 ? announcements.map((ann) => {
+                                if (!ann || !ann.id) return null;
+                                return (
                                 <div key={ann.id} className={`card p-5 border-l-4 ${ann.priority === 'HIGH' ? 'border-l-red-500 bg-red-50/30' :
                                     ann.priority === 'MEDIUM' ? 'border-l-orange-500' : 'border-l-blue-500'
                                     }`}>
@@ -249,20 +266,20 @@ export const ParentDashboard = () => {
                                         <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${ann.priority === 'HIGH' ? 'bg-red-100 text-red-700' :
                                             ann.priority === 'MEDIUM' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
                                             }`}>
-                                            {ann.priority} Priority
+                                            {ann.priority || 'NORMAL'} Priority
                                         </span>
                                         <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1">
                                             <Clock size={10} />
-                                            {new Date(ann.createdAt).toLocaleDateString()}
+                                            {ann.createdAt ? new Date(ann.createdAt).toLocaleDateString() : 'N/A'}
                                         </span>
                                     </div>
-                                    <h4 className="font-bold text-gray-900 mb-1">{ann.title}</h4>
-                                    <p className="text-sm text-gray-600 leading-relaxed mb-4">{ann.content}</p>
+                                    <h4 className="font-bold text-gray-900 mb-1">{ann.title || 'Announcement'}</h4>
+                                    <p className="text-sm text-gray-600 leading-relaxed mb-4">{ann.content || ''}</p>
                                     <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
                                         <span className="text-[10px] font-bold text-gray-400 capitalize">Shared by Academy Office</span>
                                     </div>
                                 </div>
-                            )) : (
+                            )}) : (
                                 <div className="card text-center py-10 bg-gray-50 border-dashed border-2">
                                     <Megaphone className="mx-auto text-gray-300 mb-3" size={32} />
                                     <p className="text-gray-500 text-sm font-medium">No new announcements today.</p>
@@ -279,10 +296,12 @@ export const ParentDashboard = () => {
                                 </h2>
                             </div>
                             <div className="space-y-3">
-                                {reports.length > 0 ? (reports as any[]).slice(0, 3).map((report: any) => (
+                                {reports && reports.length > 0 ? reports.slice(0, 3).map((report: any) => {
+                                    if (!report || !report.id) return null;
+                                    return (
                                     <div
                                         key={report.id}
-                                        onClick={() => navigate(`/student/${report.student.id}`, { state: { activeTab: 'reports' } })}
+                                        onClick={() => report.student?.id && navigate(`/student/${report.student.id}`, { state: { activeTab: 'reports' } })}
                                         className="card p-4 hover:bg-gray-50 cursor-pointer transition-colors border-l-4 border-l-blue-500"
                                     >
                                         <div className="flex items-center justify-between mb-2">
@@ -290,13 +309,15 @@ export const ParentDashboard = () => {
                                                 {report.term?.name || 'Term Report'}
                                             </span>
                                             <span className="text-[10px] font-bold text-gray-400">
-                                                {new Date(report.publishedAt).toLocaleDateString()}
+                                                {report.publishedAt ? new Date(report.publishedAt).toLocaleDateString() : 'N/A'}
                                             </span>
                                         </div>
-                                        <h4 className="font-bold text-gray-900 text-sm mb-1">{report.student?.user?.firstName ? `${report.student.user.firstName}'s Report` : 'Student Report'}</h4>
+                                        <h4 className="font-bold text-gray-900 text-sm mb-1">
+                                            {report.student?.user?.firstName ? `${report.student.user.firstName}'s Report` : 'Student Report'}
+                                        </h4>
                                         <p className="text-xs text-gray-500 line-clamp-1">{report.summary || 'No summary available'}</p>
                                     </div>
-                                )) : (
+                                );}) : (
                                     <div className="card text-center py-8 bg-gray-50 border-dashed border-2">
                                         <FileText className="mx-auto text-gray-300 mb-2" size={24} />
                                         <p className="text-gray-500 text-xs font-medium">No reports published yet.</p>
