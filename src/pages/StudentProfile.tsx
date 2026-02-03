@@ -18,7 +18,8 @@ import {
     Wallet,
     TrendingUp,
     TrendingDown,
-    Minus
+    Minus,
+    Plus
 } from 'lucide-react';
 import api from '../lib/api';
 import { DashboardLayout } from '../components/DashboardLayout';
