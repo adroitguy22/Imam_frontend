@@ -545,6 +545,43 @@ class ApiClient {
         return response.data;
     }
 
+    // Lesson Plans
+    async getLessonPlans(params?: {
+        status?: string;
+        subjectId?: string;
+        classId?: string;
+        startDate?: string;
+        endDate?: string;
+    }) {
+        const response = await this.client.get('/lesson-plans', { params });
+        return response.data;
+    }
+
+    async getLessonPlanById(id: string) {
+        const response = await this.client.get(`/lesson-plans/${id}`);
+        return response.data;
+    }
+
+    async createLessonPlan(data: any) {
+        const response = await this.client.post('/lesson-plans', data);
+        return response.data;
+    }
+
+    async updateLessonPlan(id: string, data: any) {
+        const response = await this.client.put(`/lesson-plans/${id}`, data);
+        return response.data;
+    }
+
+    async deleteLessonPlan(id: string) {
+        const response = await this.client.delete(`/lesson-plans/${id}`);
+        return response.data;
+    }
+
+    async getLessonPlanStats(params?: { startDate?: string; endDate?: string }) {
+        const response = await this.client.get('/lesson-plans/stats', { params });
+        return response.data;
+    }
+
     // Generic request method for custom endpoints
     async request(method: string, url: string, data?: any, config?: any) {
         const response = await this.client.request({
