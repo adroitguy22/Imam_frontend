@@ -44,7 +44,9 @@ export const StudentProfile = () => {
     useEffect(() => {
         if (id) {
             fetchStudentDetails();
-            fetchStudentFees();
+            if (currentUser?.role !== 'TEACHER') {
+                fetchStudentFees();
+            }
         }
     }, [id]);
 
@@ -264,19 +266,21 @@ export const StudentProfile = () => {
 
                     {/* Tabs Navigation */}
                     <div className="bg-white/10 backdrop-blur-md px-8 flex overflow-x-auto border-t border-white/10 scrollbar-hide">
-                        {['overview', 'portfolio', 'achievements', 'attendance', 'progress', 'reports', 'documents', 'info', 'fees'].map((tab) => (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab)}
-                                className={`px-6 py-4 text-sm font-bold uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === tab ? 'text-white' : 'text-primary-100 hover:text-white'
-                                    }`}
-                            >
-                                {tab}
-                                {activeTab === tab && (
-                                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-t-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
-                                )}
-                            </button>
-                        ))}
+                        {['overview', 'portfolio', 'achievements', 'attendance', 'progress', 'reports', 'documents', 'info', 'fees']
+                            .filter(tab => tab !== 'fees' || currentUser?.role !== 'TEACHER')
+                            .map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab)}
+                                    className={`px-6 py-4 text-sm font-bold uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === tab ? 'text-white' : 'text-primary-100 hover:text-white'
+                                        }`}
+                                >
+                                    {tab}
+                                    {activeTab === tab && (
+                                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-t-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
+                                    )}
+                                </button>
+                            ))}
                     </div>
                 </div>
 
@@ -519,7 +523,7 @@ export const StudentProfile = () => {
                             </div>
                         </div>
                     )}
-                    {activeTab === 'fees' && (
+                    {activeTab === 'fees' && currentUser?.role !== 'TEACHER' && (
                         <div className="card">
                             <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
                                 <Wallet className="text-primary-600" size={20} />
