@@ -123,7 +123,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
                             <img src={logo} alt="Imam Malik Academy" className="w-full h-full object-cover" />
                         </div>
-                        <span className="text-xl font-bold text-gray-900">StudentApp</span>
+                        <span className="text-xl font-bold text-gray-900">Imam Malik Academy</span>
                     </div>
 
                     <nav className="flex-1 px-4 space-y-1">
