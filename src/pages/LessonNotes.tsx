@@ -221,6 +221,7 @@ Example: Create a lesson note on Photosynthesis for JSS 2 Basic Science class, 4
                     </div>
                 </div>
             </div>
+            </div>
             </DashboardLayout>
     );
 };

@@ -65,7 +65,9 @@ export const ParentChildren = () => {
     }, []);
 
     const getChildInitials = (child: Child) => {
-        return `${child.user?.firstName?.[0] || ''}${child.user?.lastName?.[0] || ''}`.toUpperCase();
+        const firstInitial = child.user?.firstName?.[0] || '';
+        const lastInitial = child.user?.lastName?.[0] || '';
+        return (firstInitial + lastInitial || 'S').toUpperCase();
     };
 
     const getChildName = (child: Child) => {

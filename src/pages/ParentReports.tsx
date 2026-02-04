@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import {
     FileText,
     Calendar,
-    Download,
     Eye,
     Filter,
     RefreshCw,
@@ -79,7 +78,9 @@ export const ParentReports = () => {
     };
 
     const getStudentName = (report: Report) => {
-        return `${report.student?.user?.firstName || ''} ${report.student?.user?.lastName || ''}`.trim() || 'Student';
+        const firstName = report.student?.user?.firstName || '';
+        const lastName = report.student?.user?.lastName || '';
+        return (firstName + ' ' + lastName).trim() || 'Student';
     };
 
     const handleViewReport = (report: Report) => {
@@ -187,7 +188,7 @@ export const ParentReports = () => {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {filteredReports.map((report) => (
+                        {filteredReports.filter(r => r?.id).map((report) => (
                             <div
                                 key={report.id}
                                 className="card hover:shadow-lg transition-all duration-200 group"

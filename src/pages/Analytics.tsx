@@ -82,12 +82,12 @@ export const Analytics = () => {
 
     // Get top performers
     const studentPerformance = students.map(student => {
-        const studentLogs = progressLogs.filter(log => log.student?.user?.firstName === student.user.firstName);
+        const studentLogs = progressLogs.filter(log => log.student?.user?.firstName === student.user?.firstName);
         const avgLevel = studentLogs.length > 0
             ? studentLogs.reduce((sum, log) => sum + log.currentLevel, 0) / studentLogs.length
             : 0;
         return { ...student, avgLevel, assessmentCount: studentLogs.length };
-    }).sort((a, b) => b.avgLevel - a.avgLevel);
+    }).filter(s => s.assessmentCount > 0).sort((a, b) => b.avgLevel - a.avgLevel);
 
     const topPerformers = studentPerformance.slice(0, 5);
 
@@ -102,11 +102,15 @@ export const Analytics = () => {
         return acc;
     }, {} as Record<string, { total: number; count: number }>);
 
-    const domainStats = Object.entries(domainBreakdown).map(([name, data]) => ({
-        name,
-        avg: Math.round(data.total / data.count),
-        count: data.count
-    })).sort((a, b) => b.avg - a.avg);
+    const domainStats = Object.entries(domainBreakdown)
+        .filter(([name]) => name) // Filter out null/undefined names
+        .map(([name, data]) => ({
+            name,
+            avg: Math.round(data.total / data.count),
+            count: data.count
+        }))
+        .filter(d => !isNaN(d.avg)) // Filter out NaN averages
+        .sort((a, b) => b.avg - a.avg);
 
     // Performance distribution
     const performanceDistribution = {
@@ -215,7 +219,7 @@ export const Analytics = () => {
                         </div>
                         {topPerformers.length > 0 ? (
                             <div className="space-y-3">
-                                {topPerformers.map((student, index) => (
+                                {topPerformers.filter(s => s?.id && s?.user).map((student, index) => (
                                     <div
                                         key={student.id}
                                         className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
@@ -231,7 +235,7 @@ export const Analytics = () => {
                                             </div>
                                             <div>
                                                 <p className="font-semibold text-gray-900">
-                                                    {student.user.firstName} {student.user.lastName}
+                                                    {student.user?.firstName || 'Student'} {student.user?.lastName || ''}
                                                 </p>
                                                 <p className="text-xs text-gray-500">{student.class?.name || 'No class'}</p>
                                             </div>
@@ -296,7 +300,7 @@ export const Analytics = () => {
                     </div>
                     {domainStats.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {domainStats.map((domain) => (
+                            {domainStats.filter(d => d?.name).map((domain) => (
                                 <div key={domain.name} className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
                                     <h3 className="font-semibold text-gray-900 mb-2">{domain.name}</h3>
                                     <div className="flex items-end justify-between">
@@ -334,6 +338,7 @@ export const Analytics = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {studentPerformance
                                 .filter(s => s.avgLevel > 0 && s.avgLevel < 5)
+                                .filter(s => s?.id && s?.user) // Filter out null students
                                 .slice(0, 6)
                                 .map((student) => (
                                     <div
@@ -342,7 +347,7 @@ export const Analytics = () => {
                                     >
                                         <div>
                                             <p className="font-semibold text-gray-900">
-                                                {student.user.firstName} {student.user.lastName}
+                                                {student.user?.firstName || 'Student'} {student.user?.lastName || ''}
                                             </p>
                                             <p className="text-sm text-orange-600 font-medium">Avg: {student.avgLevel.toFixed(1)}/10</p>
                                         </div>

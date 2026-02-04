@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import api from '../lib/api';
-import { useAuthStore } from '../stores/authStore';
 import { useToast } from '../components/Toast';
 import {
     BookOpen,
@@ -18,8 +17,6 @@ import {
     Edit,
     Trash2,
     Eye,
-    ChevronDown,
-    ChevronUp,
     RefreshCw
 } from 'lucide-react';
 
@@ -56,7 +53,6 @@ interface LessonStats {
 }
 
 export const Lessons = () => {
-    const { user } = useAuthStore();
     const { showError, showSuccess } = useToast();
     const [lessons, setLessons] = useState<Lesson[]>([]);
     const [stats, setStats] = useState<LessonStats | null>(null);
@@ -216,8 +212,8 @@ export const Lessons = () => {
 
     const filteredLessons = lessons.filter(lesson =>
         lesson.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        lesson.subject.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        lesson.class.name.toLowerCase().includes(searchQuery.toLowerCase())
+        (lesson.subject?.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (lesson.class?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -378,11 +374,11 @@ export const Lessons = () => {
                                             <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-600">
                                                 <div className="flex items-center gap-1">
                                                     <BookOpen size={16} />
-                                                    <span>{lesson.subject.name}</span>
+                                                    <span>{lesson.subject?.name || 'N/A'}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <Users size={16} />
-                                                    <span>{lesson.class.name}</span>
+                                                    <span>{lesson.class?.name || 'N/A'}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <Calendar size={16} />
@@ -648,7 +644,7 @@ export const Lessons = () => {
                         <div className="p-6 border-b border-gray-200 flex justify-between items-start">
                             <div>
                                 <h2 className="text-xl font-bold text-gray-900">{selectedLesson.title}</h2>
-                                <p className="text-gray-600 mt-1">{selectedLesson.subject.name} • {selectedLesson.class.name}</p>
+                                <p className="text-gray-600 mt-1">{selectedLesson.subject?.name || 'N/A'} • {selectedLesson.class?.name || 'N/A'}</p>
                             </div>
                             <button
                                 onClick={() => setShowViewModal(false)}

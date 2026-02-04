@@ -99,9 +99,9 @@ export const TeacherDashboard = () => {
 
 
     const filteredStudents = students.filter(student =>
-        student.user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        student.user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        student.studentId.toLowerCase().includes(searchQuery.toLowerCase())
+        (student.user?.firstName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (student.user?.lastName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (student.studentId || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -188,11 +188,11 @@ export const TeacherDashboard = () => {
                                         >
                                             <div className="flex items-center space-x-3">
                                                 <div className="w-10 h-10 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold">
-                                                    {student.user.firstName[0]}{student.user.lastName[0]}
+                                                    {(student.user?.firstName?.[0] || 'S')}{(student.user?.lastName?.[0] || '')}
                                                 </div>
                                                 <div>
-                                                    <p className="font-semibold text-gray-900">{student.user.firstName} {student.user.lastName}</p>
-                                                    <p className="text-xs text-gray-500">{student.studentId} • {student.class?.name || 'No Class'}</p>
+                                                    <p className="font-semibold text-gray-900">{student.user?.firstName || 'Student'} {student.user?.lastName || ''}</p>
+                                                    <p className="text-xs text-gray-500">{student.studentId || 'N/A'} • {student.class?.name || 'No Class'}</p>
                                                 </div>
                                             </div>
                                             <button className="text-gray-400 hover:text-primary-600">
@@ -218,7 +218,7 @@ export const TeacherDashboard = () => {
                                     <div className="w-2 h-2 mt-2 rounded-full bg-primary-500 shrink-0"></div>
                                     <div>
                                         <p className="text-sm font-medium text-gray-900">
-                                            Logged {log.skillDomain.name} for {log.student.user.firstName}
+                                            Logged {log.skillDomain?.name || 'Skill'} for {log.student?.user?.firstName || 'a student'}
                                         </p>
                                         <p className="text-xs text-gray-500 mt-1">
                                             {new Date(log.assessmentDate).toLocaleDateString()} • Level {log.currentLevel}

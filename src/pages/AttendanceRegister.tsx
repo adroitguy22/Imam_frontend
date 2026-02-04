@@ -10,7 +10,6 @@ import {
     AlertCircle,
     RefreshCw
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import api from '../lib/api';
 import { DashboardLayout } from '../components/DashboardLayout';
@@ -31,7 +30,6 @@ interface Class {
 }
 
 export const AttendanceRegister = () => {
-    const navigate = useNavigate();
     const { showError, showSuccess } = useToast();
     const [classes, setClasses] = useState<Class[]>([]);
     const [selectedClassId, setSelectedClassId] = useState<string>('');

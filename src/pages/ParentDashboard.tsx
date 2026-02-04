@@ -20,7 +20,7 @@ import { DashboardLayout } from '../components/DashboardLayout';
 
 export const ParentDashboard = () => {
     const navigate = useNavigate();
-    const { showError, showSuccess } = useToast();
+    const { showError } = useToast();
     const [children, setChildren] = useState<any[]>([]);
     const [announcements, setAnnouncements] = useState<any[]>([]);
     const [reports, setReports] = useState<any[]>([]);
@@ -170,7 +170,7 @@ export const ParentDashboard = () => {
 
                                 const initials = child.user?.firstName?.[0] && child.user?.lastName?.[0]
                                     ? `${child.user.firstName[0]}${child.user.lastName[0]}`
-                                    : 'S';
+                                    : (child.user?.firstName?.[0] || 'S');
 
                                 return (
                                 <div
