@@ -77,26 +77,22 @@ export const AttendanceRegister = () => {
             const studentsList = data?.students || [];
             setStudents(studentsList);
 
-            // Initialize attendance state
-            const initialAttendance: Record<string, { status: string, notes: string }> = {};
-            studentsList.forEach((student: Student) => {
-                initialAttendance[student.id] = { status: 'PRESENT', notes: '' };
-            });
-            setAttendance(initialAttendance);
+            // Try to fetch existing attendance for this date first
+            const attendanceMap: Record<string, { status: string, notes: string }> = {};
 
-            // Try to fetch existing attendance for this date
             try {
                 const existing = await api.getClassAttendance(classId, date);
                 if (existing.length > 0) {
-                    const existingMap: Record<string, { status: string, notes: string }> = { ...initialAttendance };
                     existing.forEach((record: any) => {
-                        existingMap[record.studentId] = { status: record.status, notes: record.notes || '' };
+                        attendanceMap[record.studentId] = { status: record.status, notes: record.notes || '' };
                     });
-                    setAttendance(existingMap);
                 }
             } catch (e) {
-                // No existing attendance or error, keep initial
+                // No existing attendance or error - keep empty map
             }
+
+            // Initialize attendance state (empty = not marked yet)
+            setAttendance(attendanceMap);
 
         } catch (err) {
             console.error('Failed to fetch students', err);
@@ -128,11 +124,13 @@ export const AttendanceRegister = () => {
         setSuccess(false);
 
         try {
-            const records = Object.entries(attendance).map(([studentId, data]) => ({
-                studentId,
-                status: data.status,
-                notes: data.notes
-            }));
+            const records = Object.entries(attendance)
+                .filter(([, data]) => data.status) // Only include students with a status
+                .map(([studentId, data]) => ({
+                    studentId,
+                    status: data.status,
+                    notes: data.notes
+                }));
 
             const result = await api.recordAttendance(date, records);
             setSuccess(true);
@@ -165,12 +163,8 @@ export const AttendanceRegister = () => {
             const result = await api.clearClassAttendance(selectedClassId, date);
             showSuccess(result.message || 'Attendance cleared successfully');
 
-            // Reset attendance state
-            const initialAttendance: Record<string, { status: string, notes: string }> = {};
-            students.forEach((student: Student) => {
-                initialAttendance[student.id] = { status: 'PRESENT', notes: '' };
-            });
-            setAttendance(initialAttendance);
+            // Reset attendance state (empty = not marked)
+            setAttendance({});
             setSuccess(false);
         } catch (err: any) {
             setError(err.response?.data?.error || 'Failed to clear attendance.');
@@ -289,7 +283,7 @@ export const AttendanceRegister = () => {
                                                     onClick={() => handleStatusChange(student.id, 'PRESENT')}
                                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 transition-all ${attendance[student.id]?.status === 'PRESENT'
                                                         ? 'bg-green-500 text-white shadow-sm'
-                                                        : 'text-gray-500 hover:text-gray-700'
+                                                        : 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'
                                                         }`}
                                                 >
                                                     <CheckCircle size={14} />
@@ -299,7 +293,7 @@ export const AttendanceRegister = () => {
                                                     onClick={() => handleStatusChange(student.id, 'LATE')}
                                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 transition-all ${attendance[student.id]?.status === 'LATE'
                                                         ? 'bg-amber-500 text-white shadow-sm'
-                                                        : 'text-gray-500 hover:text-gray-700'
+                                                        : 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'
                                                         }`}
                                                 >
                                                     <Clock size={14} />
@@ -309,13 +303,16 @@ export const AttendanceRegister = () => {
                                                     onClick={() => handleStatusChange(student.id, 'ABSENT')}
                                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 transition-all ${attendance[student.id]?.status === 'ABSENT'
                                                         ? 'bg-red-500 text-white shadow-sm'
-                                                        : 'text-gray-500 hover:text-gray-700'
+                                                        : 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'
                                                         }`}
                                                 >
                                                     <XCircle size={14} />
                                                     <span className="hidden sm:inline">Absent</span>
                                                 </button>
                                             </div>
+                                            {!attendance[student.id]?.status && (
+                                                <div className="text-center text-xs text-gray-400 mt-1">Not marked</div>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4">
                                             <input
