@@ -490,6 +490,20 @@ class ApiClient {
         return response.data;
     }
 
+    async clearClassAttendance(classId: string, date: string) {
+        const response = await this.client.delete(`/attendance/class/${classId}`, {
+            params: { date }
+        });
+        return response.data;
+    }
+
+    async clearAllAttendanceForDate(date: string) {
+        const response = await this.client.delete('/attendance/all', {
+            params: { date }
+        });
+        return response.data;
+    }
+
     // Fees
     async getFees(params?: { studentId?: string, summary?: string }) {
         const response = await this.client.get('/fees', { params });

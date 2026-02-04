@@ -8,7 +8,9 @@ import {
     Calendar,
     Loader2,
     AlertCircle,
-    RefreshCw
+    RefreshCw,
+    Trash2,
+    AlertTriangle
 } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import api from '../lib/api';
@@ -36,6 +38,8 @@ export const AttendanceRegister = () => {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [isClearing, setIsClearing] = useState(false);
+    const [showClearConfirm, setShowClearConfirm] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
@@ -130,9 +134,14 @@ export const AttendanceRegister = () => {
                 notes: data.notes
             }));
 
-            await api.recordAttendance(date, records);
+            const result = await api.recordAttendance(date, records);
             setSuccess(true);
-            showSuccess('Attendance saved successfully!');
+
+            // Show detailed success message
+            const message = result?.message ||
+                `Attendance saved: ${result?.created || 0} new, ${result?.updated || 0} updated`;
+            showSuccess(message);
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (err: any) {
             setError(err.response?.data?.error || 'Failed to save attendance.');
@@ -145,6 +154,30 @@ export const AttendanceRegister = () => {
     const handleRefresh = () => {
         if (selectedClassId) {
             fetchStudents(selectedClassId);
+        }
+    };
+
+    const handleClearAttendance = async () => {
+        setIsClearing(true);
+        setError(null);
+
+        try {
+            const result = await api.clearClassAttendance(selectedClassId, date);
+            showSuccess(result.message || 'Attendance cleared successfully');
+
+            // Reset attendance state
+            const initialAttendance: Record<string, { status: string, notes: string }> = {};
+            students.forEach((student: Student) => {
+                initialAttendance[student.id] = { status: 'PRESENT', notes: '' };
+            });
+            setAttendance(initialAttendance);
+            setSuccess(false);
+        } catch (err: any) {
+            setError(err.response?.data?.error || 'Failed to clear attendance.');
+            showError('Failed to clear attendance. Please try again.');
+        } finally {
+            setIsClearing(false);
+            setShowClearConfirm(false);
         }
     };
 
@@ -172,6 +205,14 @@ export const AttendanceRegister = () => {
                         title="Refresh"
                     >
                         <RefreshCw size={20} className={isLoading ? 'animate-spin' : ''} />
+                    </button>
+                    <button
+                        onClick={() => setShowClearConfirm(true)}
+                        disabled={students.length === 0 || isLoading || isSaving}
+                        className="p-2 hover:bg-red-50 text-red-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Clear attendance for this date"
+                    >
+                        <Trash2 size={20} />
                     </button>
                     <div className="relative">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
@@ -313,6 +354,50 @@ export const AttendanceRegister = () => {
                 </div>
             )}
         </div>
+
+        {/* Clear Attendance Confirmation Modal */}
+        {showClearConfirm && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-red-100 rounded-full">
+                            <AlertTriangle size={24} className="text-red-600" />
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-900">Clear Attendance?</h2>
+                    </div>
+                    <p className="text-gray-600 mb-6">
+                        Are you sure you want to clear all attendance records for <strong>{new Date(date).toLocaleDateString()}</strong>?
+                        This action cannot be undone.
+                    </p>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => setShowClearConfirm(false)}
+                            disabled={isClearing}
+                            className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleClearAttendance}
+                            disabled={isClearing}
+                            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
+                            {isClearing ? (
+                                <>
+                                    <Loader2 className="animate-spin" size={16} />
+                                    <span>Clearing...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Trash2 size={16} />
+                                    <span>Clear All</span>
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
         </DashboardLayout>
     );
 };
