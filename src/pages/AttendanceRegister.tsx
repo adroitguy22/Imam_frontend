@@ -16,8 +16,6 @@ import { DashboardLayout } from '../components/DashboardLayout';
 
 interface Student {
     id: string;
-    firstName: string;
-    lastName: string;
     user: {
         firstName: string;
         lastName: string;
@@ -72,11 +70,12 @@ export const AttendanceRegister = () => {
         setIsLoading(true);
         try {
             const data = await api.getClass(classId);
-            setStudents(data.students);
+            const studentsList = data?.students || [];
+            setStudents(studentsList);
 
             // Initialize attendance state
             const initialAttendance: Record<string, { status: string, notes: string }> = {};
-            data.forEach((student: Student) => {
+            studentsList.forEach((student: Student) => {
                 initialAttendance[student.id] = { status: 'PRESENT', notes: '' };
             });
             setAttendance(initialAttendance);
