@@ -8,10 +8,12 @@ import {
     Calendar,
     Loader2,
     AlertCircle,
-    ArrowLeft
+    RefreshCw
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '../components/Toast';
 import api from '../lib/api';
+import { DashboardLayout } from '../components/DashboardLayout';
 
 interface Student {
     id: string;
@@ -29,6 +31,8 @@ interface Class {
 }
 
 export const AttendanceRegister = () => {
+    const navigate = useNavigate();
+    const { showError, showSuccess } = useToast();
     const [classes, setClasses] = useState<Class[]>([]);
     const [selectedClassId, setSelectedClassId] = useState<string>('');
     const [students, setStudents] = useState<Student[]>([]);
@@ -60,6 +64,7 @@ export const AttendanceRegister = () => {
         } catch (err) {
             console.error('Failed to fetch classes', err);
             setError('Failed to load classes.');
+            showError('Unable to load classes. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -95,6 +100,7 @@ export const AttendanceRegister = () => {
         } catch (err) {
             console.error('Failed to fetch students', err);
             setError('Failed to load student list.');
+            showError('Unable to load students. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -129,11 +135,19 @@ export const AttendanceRegister = () => {
 
             await api.recordAttendance(date, records);
             setSuccess(true);
+            showSuccess('Attendance saved successfully!');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (err: any) {
             setError(err.response?.data?.error || 'Failed to save attendance.');
+            showError('Failed to save attendance. Please try again.');
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleRefresh = () => {
+        if (selectedClassId) {
+            fetchStudents(selectedClassId);
         }
     };
 
@@ -146,18 +160,22 @@ export const AttendanceRegister = () => {
     }
 
     return (
-        <div className="max-w-5xl mx-auto space-y-6 pb-20">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                    <Link to="/teacher/dashboard" className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500">
-                        <ArrowLeft size={20} />
-                    </Link>
+        <DashboardLayout>
+            <div className="max-w-5xl mx-auto space-y-6 pb-20">
+                <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">Attendance Register</h1>
                         <p className="text-sm text-gray-500">Mark daily presence for your class</p>
                     </div>
-                </div>
                 <div className="flex items-center space-x-3">
+                    <button
+                        onClick={handleRefresh}
+                        disabled={isLoading}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 disabled:opacity-50"
+                        title="Refresh"
+                    >
+                        <RefreshCw size={20} className={isLoading ? 'animate-spin' : ''} />
+                    </button>
                     <div className="relative">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                         <input
@@ -298,5 +316,6 @@ export const AttendanceRegister = () => {
                 </div>
             )}
         </div>
+        </DashboardLayout>
     );
 };

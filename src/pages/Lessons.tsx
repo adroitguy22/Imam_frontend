@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
+import { useToast } from '../components/Toast';
 import {
     BookOpen,
     Plus,
@@ -18,7 +19,8 @@ import {
     Trash2,
     Eye,
     ChevronDown,
-    ChevronUp
+    ChevronUp,
+    RefreshCw
 } from 'lucide-react';
 
 interface Lesson {
@@ -55,6 +57,7 @@ interface LessonStats {
 
 export const Lessons = () => {
     const { user } = useAuthStore();
+    const { showError, showSuccess } = useToast();
     const [lessons, setLessons] = useState<Lesson[]>([]);
     const [stats, setStats] = useState<LessonStats | null>(null);
     const [loading, setLoading] = useState(true);
@@ -93,6 +96,7 @@ export const Lessons = () => {
             setLessons(data);
         } catch (error) {
             console.error('Failed to fetch lessons:', error);
+            showError('Unable to load lessons. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -107,15 +111,61 @@ export const Lessons = () => {
         }
     };
 
+    const handleEditLesson = (lesson: Lesson) => {
+        // Pre-fill the form with lesson data
+        setFormData({
+            title: lesson.title,
+            description: lesson.description || '',
+            subjectId: lesson.subject?.code || '',
+            classId: lesson.class?.name?.toLowerCase().replace(/\s/g, '') || '',
+            date: lesson.date?.split('T')[0] || '',
+            startTime: lesson.startTime || '',
+            endTime: lesson.endTime || '',
+            duration: lesson.duration || 40,
+            objectives: lesson.objectives || '',
+            materials: lesson.materials || '',
+            activities: lesson.activities || '',
+            assessment: lesson.assessment || '',
+            homework: lesson.homework || ''
+        });
+        setSelectedLesson(lesson);
+        setShowCreateModal(true);
+    };
+
+    const handleDeleteLesson = async (lessonId: string) => {
+        if (!confirm('Are you sure you want to delete this lesson?')) return;
+
+        try {
+            await api.deleteLessonPlan(lessonId);
+            showSuccess('Lesson deleted successfully');
+            fetchLessons();
+            fetchStats();
+        } catch (error) {
+            console.error('Failed to delete lesson:', error);
+            showError('Unable to delete lesson. Please try again.');
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await api.createLessonPlan(formData);
+            if (selectedLesson) {
+                // Update existing lesson
+                await api.updateLessonPlan(selectedLesson.id, formData);
+                showSuccess('Lesson updated successfully');
+            } else {
+                // Create new lesson
+                await api.createLessonPlan(formData);
+                showSuccess('Lesson created successfully');
+            }
             setShowCreateModal(false);
+            setSelectedLesson(null);
             resetForm();
             fetchLessons();
+            fetchStats();
         } catch (error) {
-            console.error('Failed to create lesson:', error);
+            console.error('Failed to save lesson:', error);
+            showError('Unable to save lesson. Please try again.');
         }
     };
 
@@ -135,6 +185,13 @@ export const Lessons = () => {
             assessment: '',
             homework: ''
         });
+        setSelectedLesson(null);
+    };
+
+    const handleCloseModal = () => {
+        setShowCreateModal(false);
+        setSelectedLesson(null);
+        resetForm();
     };
 
     const getStatusColor = (status: string) => {
@@ -174,13 +231,30 @@ export const Lessons = () => {
                     </h1>
                     <p className="text-gray-600 mt-2">Plan and track your lessons effectively</p>
                 </div>
-                <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="btn btn-primary flex items-center gap-2"
-                >
-                    <Plus size={20} />
-                    New Lesson
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => {
+                            fetchLessons();
+                            fetchStats();
+                            showSuccess('Lessons refreshed');
+                        }}
+                        className="btn bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                        <RefreshCw size={18} />
+                        Refresh
+                    </button>
+                    <button
+                        onClick={() => {
+                            setSelectedLesson(null);
+                            resetForm();
+                            setShowCreateModal(true);
+                        }}
+                        className="btn btn-primary flex items-center gap-2"
+                    >
+                        <Plus size={20} />
+                        New Lesson
+                    </button>
+                </div>
             </div>
 
             {/* Stats Cards */}
@@ -342,12 +416,14 @@ export const Lessons = () => {
                                         <Eye size={18} />
                                     </button>
                                     <button
+                                        onClick={() => handleEditLesson(lesson)}
                                         className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                         title="Edit lesson"
                                     >
                                         <Edit size={18} />
                                     </button>
                                     <button
+                                        onClick={() => handleDeleteLesson(lesson.id)}
                                         className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                         title="Delete lesson"
                                     >
@@ -365,7 +441,7 @@ export const Lessons = () => {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                         <div className="p-6 border-b border-gray-200">
-                            <h2 className="text-xl font-bold text-gray-900">Create New Lesson</h2>
+                            <h2 className="text-xl font-bold text-gray-900">{selectedLesson ? 'Edit Lesson' : 'Create New Lesson'}</h2>
                         </div>
 
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -548,10 +624,7 @@ export const Lessons = () => {
                             <div className="flex justify-end gap-3 pt-4 border-t">
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        setShowCreateModal(false);
-                                        resetForm();
-                                    }}
+                                    onClick={handleCloseModal}
                                     className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
                                 >
                                     Cancel
@@ -560,7 +633,7 @@ export const Lessons = () => {
                                     type="submit"
                                     className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
                                 >
-                                    Create Lesson
+                                    {selectedLesson ? 'Update Lesson' : 'Create Lesson'}
                                 </button>
                             </div>
                         </form>

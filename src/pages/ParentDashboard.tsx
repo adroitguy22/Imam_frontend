@@ -9,14 +9,18 @@ import {
     Wallet,
     CheckCircle,
     Clock,
-    AlertTriangle
+    AlertTriangle,
+    MessageCircle,
+    RefreshCw
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../components/Toast';
 import api from '../lib/api';
 import { DashboardLayout } from '../components/DashboardLayout';
 
 export const ParentDashboard = () => {
     const navigate = useNavigate();
+    const { showError, showSuccess } = useToast();
     const [children, setChildren] = useState<any[]>([]);
     const [announcements, setAnnouncements] = useState<any[]>([]);
     const [reports, setReports] = useState<any[]>([]);
@@ -40,13 +44,31 @@ export const ParentDashboard = () => {
                 setFeeSummary(summaryData.status === 'fulfilled' && summaryData.value ? summaryData.value : { total: 0, paid: 0, pending: 0 });
                 setReports(reportsData.status === 'fulfilled' && Array.isArray(reportsData.value) ? reportsData.value : []);
 
-                // Log any errors for debugging
-                if (studentsData.status === 'rejected') console.error('Failed to fetch children:', studentsData.reason);
-                if (announcementsData.status === 'rejected') console.error('Failed to fetch announcements:', announcementsData.reason);
-                if (summaryData.status === 'rejected') console.error('Failed to fetch fee summary:', summaryData.reason);
-                if (reportsData.status === 'rejected') console.error('Failed to fetch reports:', reportsData.reason);
+                // Show error toasts for any failed requests
+                const errors: string[] = [];
+                if (studentsData.status === 'rejected') {
+                    console.error('Failed to fetch children:', studentsData.reason);
+                    errors.push('children data');
+                }
+                if (announcementsData.status === 'rejected') {
+                    console.error('Failed to fetch announcements:', announcementsData.reason);
+                    errors.push('announcements');
+                }
+                if (summaryData.status === 'rejected') {
+                    console.error('Failed to fetch fee summary:', summaryData.reason);
+                    errors.push('fee summary');
+                }
+                if (reportsData.status === 'rejected') {
+                    console.error('Failed to fetch reports:', reportsData.reason);
+                    errors.push('reports');
+                }
+
+                if (errors.length > 0) {
+                    showError(`Could not load: ${errors.join(', ')}. Please check your connection.`);
+                }
             } catch (err) {
                 console.error('Failed to fetch dashboard data', err);
+                showError('Unable to load dashboard. Please try refreshing the page.');
             } finally {
                 setIsLoading(false);
             }
@@ -73,6 +95,13 @@ export const ParentDashboard = () => {
                         <h1 className="text-3xl font-black text-gray-900">Parent Dashboard</h1>
                         <p className="text-gray-500 font-medium tracking-tight">Track your children's learning journey and academy stays.</p>
                     </div>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                        <RefreshCw size={18} />
+                        <span>Refresh</span>
+                    </button>
                 </div>
 
                 {/* Financial Overview Cards */}
@@ -327,11 +356,21 @@ export const ParentDashboard = () => {
                         </div>
 
                         {/* Support Box */}
-                        <div className="bg-primary-600 rounded-2xl p-6 text-white relative overflow-hidden group cursor-pointer hover:shadow-lg transition-all">
+                        <div
+                            onClick={() => navigate('/messaging')}
+                            className="bg-primary-600 rounded-2xl p-6 text-white relative overflow-hidden group cursor-pointer hover:shadow-lg transition-all hover:bg-primary-700"
+                        >
                             <div className="relative z-10 space-y-2">
                                 <h3 className="font-bold">Need Help?</h3>
                                 <p className="text-xs text-primary-100">Contact the academy administration for any queries.</p>
-                                <button className="bg-white text-primary-600 text-xs font-bold py-2 px-4 rounded-lg mt-2">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate('/messaging');
+                                    }}
+                                    className="bg-white text-primary-600 text-xs font-bold py-2 px-4 rounded-lg mt-2 flex items-center gap-2 hover:bg-primary-50 transition-colors"
+                                >
+                                    <MessageCircle size={14} />
                                     Contact Support
                                 </button>
                             </div>

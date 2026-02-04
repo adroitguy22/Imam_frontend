@@ -9,6 +9,8 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 
 import { AdminDashboard } from './pages/AdminDashboard';
 import { ParentDashboard } from './pages/ParentDashboard';
+import { ParentChildren } from './pages/ParentChildren';
+import { ParentReports } from './pages/ParentReports';
 import { Lessons } from './pages/Lessons';
 import { Analytics } from './pages/Analytics';
 import { UserManagement } from './pages/admin/UserManagement';
@@ -149,6 +151,24 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['PARENT']}>
                 <ParentDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/parent/children"
+            element={
+              <ProtectedRoute allowedRoles={['PARENT']}>
+                <ParentChildren />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/parent/reports"
+            element={
+              <ProtectedRoute allowedRoles={['PARENT']}>
+                <ParentReports />
               </ProtectedRoute>
             }
           />

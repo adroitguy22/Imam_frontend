@@ -7,8 +7,10 @@ import {
     ArrowRight,
     PlusCircle,
     Search,
-    Filter
+    Filter,
+    RefreshCw
 } from 'lucide-react';
+import { useToast } from '../components/Toast';
 import api from '../lib/api';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { RegisterStudentModal } from '../components/RegisterStudentModal';
@@ -41,6 +43,7 @@ interface ProgressLog {
 }
 
 export const TeacherDashboard = () => {
+    const { showError, showSuccess } = useToast();
     const [students, setStudents] = useState<Student[]>([]);
     const [recentLogs, setRecentLogs] = useState<ProgressLog[]>([]);
     const [classes, setClasses] = useState<{ id: string; name: string }[]>([]);
@@ -62,9 +65,16 @@ export const TeacherDashboard = () => {
             setClasses(classesData);
         } catch (error) {
             console.error('Failed to fetch dashboard data', error);
+            showError('Unable to load dashboard data. Please check your connection and try again.');
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleRefresh = async () => {
+        setIsLoading(true);
+        await fetchDashboardData();
+        showSuccess('Dashboard refreshed successfully');
     };
 
     useEffect(() => {
@@ -104,6 +114,14 @@ export const TeacherDashboard = () => {
                         <p className="text-gray-500">Welcome back! Here's what's happening with your students.</p>
                     </div>
                     <div className="flex gap-2">
+                        <button
+                            onClick={handleRefresh}
+                            disabled={isLoading}
+                            className="btn bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center space-x-2 disabled:opacity-50"
+                        >
+                            <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
+                            <span>Refresh</span>
+                        </button>
                         <button
                             onClick={() => setIsRegisterModalOpen(true)}
                             className="btn bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center space-x-2"

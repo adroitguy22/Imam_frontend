@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useToast } from '../components/Toast';
 import api from '../lib/api';
 import {
     FileText,
@@ -8,8 +9,10 @@ import {
     Sparkles,
     BookOpen
 } from 'lucide-react';
+import { DashboardLayout } from '../components/DashboardLayout';
 
 export const LessonNotes = () => {
+    const { showError, showSuccess } = useToast();
     const [prompt, setPrompt] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [isPreviewing, setIsPreviewing] = useState(false);
@@ -19,7 +22,9 @@ export const LessonNotes = () => {
 
     const handlePreview = async () => {
         if (!prompt.trim() || prompt.trim().length < 10) {
-            setError('Please enter a detailed prompt (at least 10 characters)');
+            const errorMsg = 'Please enter a detailed prompt (at least 10 characters)';
+            setError(errorMsg);
+            showError(errorMsg);
             return;
         }
 
@@ -30,8 +35,11 @@ export const LessonNotes = () => {
         try {
             const response = await api.previewLessonNotes({ prompt: prompt.trim() });
             setPreviewContent(response.content);
+            showSuccess('Preview generated successfully');
         } catch (err: any) {
-            setError(err.response?.data?.error || 'Failed to generate preview');
+            const errorMsg = err.response?.data?.error || 'Failed to generate preview';
+            setError(errorMsg);
+            showError(errorMsg);
             setShowPreview(false);
         } finally {
             setIsPreviewing(false);
@@ -40,7 +48,9 @@ export const LessonNotes = () => {
 
     const handleDownload = async () => {
         if (!prompt.trim() || prompt.trim().length < 10) {
-            setError('Please enter a detailed prompt (at least 10 characters)');
+            const errorMsg = 'Please enter a detailed prompt (at least 10 characters)';
+            setError(errorMsg);
+            showError(errorMsg);
             return;
         }
 
@@ -60,8 +70,11 @@ export const LessonNotes = () => {
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
+            showSuccess('Lesson notes downloaded successfully');
         } catch (err: any) {
-            setError(err.response?.data?.error || 'Failed to generate lesson notes');
+            const errorMsg = err.response?.data?.error || 'Failed to generate lesson notes';
+            setError(errorMsg);
+            showError(errorMsg);
         } finally {
             setIsGenerating(false);
         }
@@ -79,8 +92,9 @@ export const LessonNotes = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto">
-            <div className="mb-6">
+        <DashboardLayout>
+            <div className="max-w-7xl mx-auto">
+                <div className="mb-6">
                 <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
                     <BookOpen className="text-primary-600" />
                     Lesson Notes Generator
@@ -207,6 +221,6 @@ Example: Create a lesson note on Photosynthesis for JSS 2 Basic Science class, 4
                     </div>
                 </div>
             </div>
-        </div>
+            </DashboardLayout>
     );
 };
