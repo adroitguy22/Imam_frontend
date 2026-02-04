@@ -51,7 +51,7 @@ export const AttendanceRegister = () => {
         if (selectedClassId) {
             fetchStudents(selectedClassId);
         }
-    }, [selectedClassId]);
+    }, [selectedClassId, date]);
 
     const fetchClasses = async () => {
         try {
