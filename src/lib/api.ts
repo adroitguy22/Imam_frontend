@@ -164,9 +164,25 @@ class ApiClient {
                             doLogout();
                             return Promise.reject(new Error('No refresh token available'));
                         }
-                    } catch (refreshError) {
+                    } catch (refreshError: any) {
                         processQueue(refreshError, null);
-                        doLogout();
+                        // Clear tokens on any refresh failure
+                        localStorage.removeItem('accessToken');
+                        localStorage.removeItem('refreshToken');
+                        localStorage.removeItem('auth-storage');
+                        // Show appropriate error message
+                        const errorMsg = refreshError?.response?.data?.error || refreshError?.message || '';
+                        if (errorMsg.includes('not found') || errorMsg.includes('inactive')) {
+                            showToast('Your account was not found. Please log in again.', 'error');
+                        } else {
+                            showToast('Your session has expired. Please log in again.', 'error');
+                        }
+                        // Only redirect if not already on login page
+                        if (window.location.pathname !== '/login') {
+                            setTimeout(() => {
+                                window.location.href = '/login';
+                            }, 100);
+                        }
                         return Promise.reject(refreshError);
                     } finally {
                         isRefreshing = false;
