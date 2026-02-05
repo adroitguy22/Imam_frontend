@@ -23,7 +23,7 @@ export const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [langMenuOpen, setLangMenuOpen] = useState(false);
     const { login, isLoading, error, clearError } = useAuthStore();
-    const { showError, showSuccess } = useToast();
+    const { showError } = useToast();
     const { t, language, setLanguage, isRTL } = useTranslation();
     const navigate = useNavigate();
 

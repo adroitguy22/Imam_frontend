@@ -65,6 +65,28 @@ const AIChatbox = () => {
     const [isLoading, setIsLoading] = useState(false);
     const { showError } = useToast();
 
+    // Load chat history from backend when opening
+    useEffect(() => {
+        if (isOpen) {
+            loadChatHistory();
+        }
+    }, [isOpen]);
+
+    const loadChatHistory = async () => {
+        try {
+            const response = await api.getChatHistory();
+            if (response && response.length > 0) {
+                const history = response.map((msg: any) => ({
+                    role: msg.sender === 'user' ? 'user' : 'assistant',
+                    content: msg.content
+                }));
+                setMessages(history);
+            }
+        } catch (error) {
+            console.log('No chat history or error loading');
+        }
+    };
+
     const sendMessage = async () => {
         if (!input.trim() || isLoading) return;
 
@@ -74,45 +96,14 @@ const AIChatbox = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer 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',
-                    'HTTP-Referer': 'https://imam-malik-academy.com',
-                    'X-Title': 'Imam Malik Academy'
-                },
-                body: JSON.stringify({
-                    model: 'meta-llama/llama-3.1-70b-instruct',
-                    messages: [
-                        {
-                            role: 'system',
-                            content: `You are the Imam Malik Academy Assistant, a helpful AI assistant for teachers at Imam Malik Academy Nigeria. You help with:
-
-1. Lesson planning and teaching strategies
-2. Classroom management tips
-3. Student engagement ideas
-4. Assessment methods
-5. Nigerian curriculum guidance (NERDC)
-6. Islamic education integration where appropriate
-
-Be friendly, professional, and concise. Provide practical, actionable advice. Keep responses under 150 words when possible.`
-                        },
-                        ...messages.map(m => ({ role: m.role, content: m.content })),
-                        { role: 'user', content: userMessage }
-                    ],
-                    max_tokens: 500
-                })
-            });
-
-            const data = await response.json();
-            const aiMessage = data.choices?.[0]?.message?.content || 'Sorry, I could not generate a response. Please try again.';
-
-            setMessages(prev => [...prev, { role: 'assistant', content: aiMessage }]);
-        } catch (error) {
-            console.error('AI Error:', error);
-            showError('Failed to get AI response');
-            setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }]);
+            const response = await api.sendChatMessage(userMessage);
+            setMessages(prev => [...prev, { role: 'assistant', content: response.content }]);
+        } catch (error: any) {
+            console.error('Chat Error:', error);
+            const errorMsg = error.response?.data?.error || 'Failed to send message';
+            showError(errorMsg);
+            // Remove the user message if failed
+            setMessages(prev => prev.slice(0, -1));
         } finally {
             setIsLoading(false);
         }

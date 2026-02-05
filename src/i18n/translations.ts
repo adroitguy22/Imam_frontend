@@ -223,12 +223,9 @@ export const translations = {
     // Analytics
     analytics: 'Analytics',
     reports: 'Reports',
-    statistics: 'Statistics',
     performance: 'Performance',
-    progress: 'Progress',
     charts: 'Charts',
     graphs: 'Graphs',
-    overview: 'Overview',
     detailed: 'Detailed',
 
     // Messages
@@ -238,10 +235,8 @@ export const translations = {
     sent: 'Sent',
     drafts: 'Drafts',
     compose: 'Compose',
-    subject: 'Subject',
-    message: 'Message',
+    messageContent: 'Message',
     recipient: 'Recipient',
-    send: 'Send',
     reply: 'Reply',
     forward: 'Forward',
     attachment: 'Attachment',
@@ -250,7 +245,6 @@ export const translations = {
     notifications: 'Notifications',
     markAllRead: 'Mark All as Read',
     noNotifications: 'No notifications',
-    notificationSettings: 'Notification Settings',
 
     // Profile
     profile: 'Profile',
@@ -535,12 +529,9 @@ export const translations = {
     // Analytics
     analytics: 'التحليلات',
     reports: 'التقارير',
-    statistics: 'الإحصائيات',
     performance: 'الأداء',
-    progress: 'التقدم',
     charts: 'المخططات',
     graphs: 'الرسوم البيانية',
-    overview: 'نظرة عامة',
     detailed: 'تفصيلي',
 
     // Messages
@@ -550,10 +541,8 @@ export const translations = {
     sent: 'المرسلة',
     drafts: 'المسودات',
     compose: 'إنشاء',
-    subject: 'الموضوع',
-    message: 'الرسالة',
+    messageContent: 'الرسالة',
     recipient: 'المستلم',
-    send: 'إرسال',
     reply: 'رد',
     forward: 'إعادة توجيه',
     attachment: 'مرفق',
@@ -562,7 +551,6 @@ export const translations = {
     notifications: 'الإشعارات',
     markAllRead: 'تعليم الكل كمقروء',
     noNotifications: 'لا توجد إشعارات',
-    notificationSettings: 'إعدادات الإشعارات',
 
     // Profile
     profile: 'الملف الشخصي',
@@ -676,7 +664,7 @@ export const translations = {
     welcomeBack: 'Barka da dawo',
     overview: 'Gani mai gani',
     statistics: 'Kididdigar',
-    recentActivity: 'Ayyukan da'irye',
+    recentActivity: 'Ayyukan da baya',
     quickActions: 'Ayyuka sauri',
     viewAll: 'Duba duka',
 
@@ -727,9 +715,9 @@ export const translations = {
     totalAbsent: 'Duk wadanda ba su ke nan',
 
     // Fees
-    fees: 'Kudin,
+    fees: 'Kudin',
     fee: 'Kudi',
-    feeManagement: 'Gudanar Kudin,
+    feeManagement: 'Gudanar Kudin',
     addFee: 'Ƙara Kudi',
     editFee: 'Gyara Kudi',
     feeDetails: 'Bayanan Kudi',
@@ -847,12 +835,9 @@ export const translations = {
     // Analytics
     analytics: 'Bincike',
     reports: 'Rahotannan',
-    statistics: 'Kididdigar',
     performance: 'Aiki',
-    progress: 'Ci Gaba',
     charts: 'Mawaka',
     graphs: 'Zane-Zane',
-    overview: 'Gani mai gani',
     detailed: 'Cikakken',
 
     // Messages
@@ -862,10 +847,8 @@ export const translations = {
     sent: 'An aikata',
     drafts: 'Rubuta',
     compose: 'Rubuta',
-    subject: 'Maganin',
-    message: 'Saƙo',
+    messageContent: 'Saƙo',
     recipient: 'Mai karɓa',
-    send: 'Aika',
     reply: 'Amsa',
     forward: 'Watsa',
     attachment: 'ƙari',
@@ -874,7 +857,6 @@ export const translations = {
     notifications: 'Sanarwoci',
     markAllRead: 'Marka Duka a Karanta',
     noNotifications: 'Babu sanarwoci',
-    notificationSettings: 'Saitunan Sanarwa',
 
     // Profile
     profile: 'Bayanan',

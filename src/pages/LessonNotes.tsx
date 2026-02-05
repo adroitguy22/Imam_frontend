@@ -6,11 +6,9 @@ import {
     Download,
     Eye,
     Loader2,
-    Sparkles,
     BookOpen,
     ChevronDown,
     ChevronUp,
-    Check,
     X
 } from 'lucide-react';
 import { DashboardLayout } from '../components/DashboardLayout';

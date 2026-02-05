@@ -617,6 +617,17 @@ class ApiClient {
     }
 
     // Generic request method for custom endpoints
+    // AI Chat
+    async sendChatMessage(message: string) {
+        const response = await this.client.post('/chat/message', { message });
+        return response.data;
+    }
+
+    async getChatHistory() {
+        const response = await this.client.get('/chat/history');
+        return response.data;
+    }
+
     async request(method: string, url: string, data?: any, config?: any) {
         const response = await this.client.request({
             method,
