@@ -547,14 +547,34 @@ class ApiClient {
     }
 
     // Lesson Notes
-    async generateLessonNotes(data: { prompt: string }) {
+    async generateLessonNotes(data: {
+        topic?: string;
+        subject?: string;
+        classLevel?: string;
+        duration?: string;
+        learningObjectives?: string;
+        specialInstructions?: string;
+        includePractical?: boolean;
+        includeAssessment?: boolean;
+        prompt?: string;
+    }) {
         const response = await this.client.post('/lessons/generate', data, {
             responseType: 'arraybuffer'
         });
         return response.data;
     }
 
-    async previewLessonNotes(data: { prompt: string }) {
+    async previewLessonNotes(data: {
+        topic?: string;
+        subject?: string;
+        classLevel?: string;
+        duration?: string;
+        learningObjectives?: string;
+        specialInstructions?: string;
+        includePractical?: boolean;
+        includeAssessment?: boolean;
+        prompt?: string;
+    }) {
         const response = await this.client.post('/lessons/preview', data);
         return response.data;
     }
