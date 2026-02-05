@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../lib/api';
 import { useToast } from '../components/Toast';
+import { DashboardLayout } from '../components/DashboardLayout';
 import {
     BookOpen,
     Plus,
@@ -17,7 +18,9 @@ import {
     Edit,
     Trash2,
     Eye,
-    RefreshCw
+    RefreshCw,
+    MessageCircle,
+    Send
 } from 'lucide-react';
 
 interface Lesson {
@@ -51,6 +54,166 @@ interface LessonStats {
     engagement: { LOW: number; MEDIUM: number; HIGH: number };
     completionRate: number;
 }
+
+// AI Chatbox Component
+const AIChatbox = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([
+        { role: 'assistant', content: 'Assalamu alaikum! I am the Imam Malik Academy Assistant. How can I help you today with your teaching?' }
+    ]);
+    const [input, setInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const { showError } = useToast();
+
+    const sendMessage = async () => {
+        if (!input.trim() || isLoading) return;
+
+        const userMessage = input.trim();
+        setInput('');
+        setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+        setIsLoading(true);
+
+        try {
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer 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',
+                    'HTTP-Referer': 'https://imam-malik-academy.com',
+                    'X-Title': 'Imam Malik Academy'
+                },
+                body: JSON.stringify({
+                    model: 'meta-llama/llama-3.1-70b-instruct',
+                    messages: [
+                        {
+                            role: 'system',
+                            content: `You are the Imam Malik Academy Assistant, a helpful AI assistant for teachers at Imam Malik Academy Nigeria. You help with:
+
+1. Lesson planning and teaching strategies
+2. Classroom management tips
+3. Student engagement ideas
+4. Assessment methods
+5. Nigerian curriculum guidance (NERDC)
+6. Islamic education integration where appropriate
+
+Be friendly, professional, and concise. Provide practical, actionable advice. Keep responses under 150 words when possible.`
+                        },
+                        ...messages.map(m => ({ role: m.role, content: m.content })),
+                        { role: 'user', content: userMessage }
+                    ],
+                    max_tokens: 500
+                })
+            });
+
+            const data = await response.json();
+            const aiMessage = data.choices?.[0]?.message?.content || 'Sorry, I could not generate a response. Please try again.';
+
+            setMessages(prev => [...prev, { role: 'assistant', content: aiMessage }]);
+        } catch (error) {
+            console.error('AI Error:', error);
+            showError('Failed to get AI response');
+            setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    };
+
+    return (
+        <>
+            {/* Floating Button */}
+            <button
+                onClick={() => setIsOpen(true)}
+                className={`fixed bottom-6 right-6 z-40 bg-primary-600 text-white p-4 rounded-full shadow-lg hover:bg-primary-700 transition-all ${isOpen ? 'scale-0' : 'scale-100'}`}
+            >
+                <MessageCircle size={24} />
+            </button>
+
+            {/* Chatbox */}
+            {isOpen && (
+                <div className="fixed bottom-6 right-6 z-40 w-96 h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-primary-600 text-white p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                                <span className="text-lg">🕌</span>
+                            </div>
+                            <div>
+                                <h3 className="font-semibold">Imam Malik Academy</h3>
+                                <p className="text-xs text-white/80">AI Teaching Assistant</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className="text-white/80 hover:text-white transition-colors"
+                        >
+                            <XCircle size={20} />
+                        </button>
+                    </div>
+
+                    {/* Messages */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                        {messages.map((msg, idx) => (
+                            <div
+                                key={idx}
+                                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                            >
+                                <div
+                                    className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+                                        msg.role === 'user'
+                                            ? 'bg-primary-600 text-white'
+                                            : 'bg-white text-gray-800 border border-gray-200'
+                                    }`}
+                                >
+                                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                                </div>
+                            </div>
+                        ))}
+                        {isLoading && (
+                            <div className="flex justify-start">
+                                <div className="bg-white border border-gray-200 rounded-2xl px-4 py-2">
+                                    <div className="flex gap-1">
+                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Input */}
+                    <div className="p-4 bg-white border-t border-gray-200">
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                                placeholder="Ask about teaching strategies..."
+                                className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                                disabled={isLoading}
+                            />
+                            <button
+                                onClick={sendMessage}
+                                disabled={!input.trim() || isLoading}
+                                className="bg-primary-600 text-white px-4 py-2 rounded-full hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <Send size={18} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
+};
 
 export const Lessons = () => {
     const { showError, showSuccess } = useToast();
@@ -217,7 +380,11 @@ export const Lessons = () => {
     );
 
     return (
-        <div className="max-w-7xl mx-auto">
+        <DashboardLayout>
+            <div className="max-w-7xl mx-auto">
+            {/* AI Chatbox Floating Button */}
+            <AIChatbox />
+
             {/* Header */}
             <div className="mb-6 flex justify-between items-center">
                 <div>
@@ -754,6 +921,7 @@ export const Lessons = () => {
                     </div>
                 </div>
             )}
-        </div>
+            </div>
+        </DashboardLayout>
     );
 };

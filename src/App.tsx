@@ -6,6 +6,7 @@ import { LoginPage } from './pages/LoginPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { LanguageProvider } from './i18n';
 
 import { AdminDashboard } from './pages/AdminDashboard';
 import { ParentDashboard } from './pages/ParentDashboard';
@@ -58,9 +59,10 @@ function App() {
   const { isAuthenticated } = useAuthStore();
 
   return (
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <ErrorBoundary>
-        <ChatWidget />
+    <LanguageProvider>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <ErrorBoundary>
+          <ChatWidget />
         <Routes>
           <Route
             path="/login"
@@ -276,6 +278,7 @@ function App() {
         </Routes>
       </ErrorBoundary>
     </BrowserRouter>
+    </LanguageProvider>
   );
 }
 
