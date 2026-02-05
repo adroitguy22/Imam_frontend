@@ -619,7 +619,7 @@ class ApiClient {
     // Generic request method for custom endpoints
     // AI Chat
     async sendChatMessage(message: string) {
-        const response = await this.client.post('/chat/message', { message });
+        const response = await this.client.post('/chat/send', { message });
         return response.data;
     }
 
