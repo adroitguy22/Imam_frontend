@@ -366,6 +366,11 @@ class ApiClient {
         return response.data;
     }
 
+    async updateStudent(id: string, data: any) {
+        const response = await this.client.patch(`/students/${id}`, data);
+        return response.data;
+    }
+
     async linkStudentParent(studentId: string, parentId: string) {
         const response = await this.client.post(`/students/${studentId}/parents`, { parentId });
         return response.data;

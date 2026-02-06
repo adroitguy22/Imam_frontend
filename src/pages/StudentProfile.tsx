@@ -19,7 +19,8 @@ import {
     TrendingUp,
     TrendingDown,
     Minus,
-    Plus
+    Plus,
+    Edit
 } from 'lucide-react';
 import api from '../lib/api';
 import { DashboardLayout } from '../components/DashboardLayout';
@@ -27,6 +28,7 @@ import { DocumentManager } from '../components/DocumentManager';
 import { ReportManager } from '../components/ReportManager';
 import { PortfolioManager } from '../components/PortfolioManager';
 import { AchievementGallery } from '../components/AchievementGallery';
+import { EditStudentModal } from '../components/EditStudentModal';
 import { useAuthStore } from '../stores/authStore';
 
 export const StudentProfile = () => {
@@ -41,6 +43,9 @@ export const StudentProfile = () => {
     const [recentLogs, setRecentLogs] = useState<any[]>([]);
     const [trends, setTrends] = useState<any[]>([]);
     const [isDataLoading, setIsDataLoading] = useState(true);
+
+    // Edit Modal State
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     // Parent Management State
     const [isAddingParent, setIsAddingParent] = useState(false);
@@ -265,6 +270,19 @@ export const StudentProfile = () => {
                     <ArrowLeft size={20} />
                     <span>Back</span>
                 </button>
+
+                {/* Admin Edit Button */}
+                {currentUser?.role === 'ADMIN' && (
+                    <div className="flex justify-end">
+                        <button
+                            onClick={() => setIsEditModalOpen(true)}
+                            className="btn btn-primary flex items-center gap-2"
+                        >
+                            <Edit size={18} />
+                            Edit Student
+                        </button>
+                    </div>
+                )}
 
                 {/* Header Card */}
                 <div className="card p-0 overflow-hidden border-none shadow-lg bg-gradient-to-r from-primary-600 to-primary-700 text-white">
@@ -745,6 +763,16 @@ export const StudentProfile = () => {
                     )}
                 </div>
             </div>
+
+            {/* Edit Student Modal */}
+            <EditStudentModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                onSuccess={() => {
+                    fetchStudentDetails();
+                }}
+                student={student}
+            />
         </DashboardLayout>
     );
 };
