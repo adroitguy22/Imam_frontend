@@ -1,7 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
-import { BookOpen, User, Mail, Lock } from 'lucide-react';
+import { BookOpen, User, Mail, Lock, Phone } from 'lucide-react';
 import api from '../lib/api';
 
 export const SignupPage = () => {
@@ -10,6 +10,7 @@ export const SignupPage = () => {
         firstName: '',
         lastName: '',
         email: '',
+        phoneNumber: '',
         password: '',
         role: 'PARENT' // Default role
     });
@@ -108,6 +109,23 @@ export const SignupPage = () => {
                                     placeholder="you@example.com"
                                     value={formData.email}
                                     onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Phone className="h-4 w-4 text-gray-400" />
+                                </div>
+                                <input
+                                    type="tel"
+                                    required
+                                    className="input pl-9"
+                                    placeholder="+234 XXX XXX XXXX"
+                                    value={formData.phoneNumber}
+                                    onChange={e => setFormData({ ...formData, phoneNumber: e.target.value })}
                                 />
                             </div>
                         </div>
