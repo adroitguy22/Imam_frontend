@@ -30,7 +30,7 @@ const subjects = [
     'English Language', 'Mathematics', 'Basic Science', 'Basic Technology',
     'Social Studies', 'Civic Education', 'Physical and Health Education',
     'Business Studies', 'Home Economics', 'Agricultural Science',
-    'Computer Studies', 'French', 'Nigerian Languages', 'Christian Religious Studies',
+    'Computer Studies', 'French', 'Nigerian Languages',
     'Islamic Religious Studies', 'Cultural and Creative Arts', 'Music',
     'Physics', 'Chemistry', 'Biology', 'Economics', 'Geography',
     'Literature in English', 'Government', 'History', 'Further Mathematics'
