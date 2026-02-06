@@ -575,7 +575,8 @@ class ApiClient {
         prompt?: string;
     }) {
         const response = await this.client.post('/lessons/generate', data, {
-            responseType: 'arraybuffer'
+            responseType: 'arraybuffer',
+            timeout: 90000 // 90 seconds for AI generation
         });
         return response.data;
     }
@@ -591,7 +592,9 @@ class ApiClient {
         includeAssessment?: boolean;
         prompt?: string;
     }) {
-        const response = await this.client.post('/lessons/preview', data);
+        const response = await this.client.post('/lessons/preview', data, {
+            timeout: 90000 // 90 seconds for AI generation
+        });
         return response.data;
     }
 
