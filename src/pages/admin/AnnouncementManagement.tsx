@@ -5,15 +5,22 @@ import {
     Trash2,
     Calendar,
     Loader2,
-    X
+    X,
+    AlertTriangle
 } from 'lucide-react';
 import api from '../../lib/api';
 import { DashboardLayout } from '../../components/DashboardLayout';
+import { Modal } from '../../components/Modal';
+import { useToast } from '../../components/Toast';
 
 export const AnnouncementManagement = () => {
+    const { showSuccess, showError } = useToast();
     const [announcements, setAnnouncements] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isAdding, setIsAdding] = useState(false);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [announcementToDelete, setAnnouncementToDelete] = useState<any>(null);
 
     // New Announcement State
     const [newAnn, setNewAnn] = useState({
@@ -31,9 +38,10 @@ export const AnnouncementManagement = () => {
         setIsLoading(true);
         try {
             const data = await api.getAnnouncements();
-            setAnnouncements(data);
+            setAnnouncements(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error('Failed to fetch announcements', err);
+            showError('Failed to fetch announcements');
         } finally {
             setIsLoading(false);
         }
@@ -49,18 +57,40 @@ export const AnnouncementManagement = () => {
             setIsAdding(false);
             setNewAnn({ title: '', content: '', priority: 'NORMAL', expiresAt: '' });
             fetchAnnouncements();
+            showSuccess('Announcement posted successfully');
         } catch (err) {
-            alert('Failed to create announcement');
+            showError('Failed to create announcement');
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this announcement?')) return;
+    const openDeleteModal = (announcement: any) => {
+        setAnnouncementToDelete(announcement);
+        setDeleteModalOpen(true);
+    };
+
+    const closeDeleteModal = () => {
+        setDeleteModalOpen(false);
+        setAnnouncementToDelete(null);
+    };
+
+    const handleDelete = async () => {
+        if (!announcementToDelete) return;
+
+        setDeletingId(announcementToDelete.id);
+        closeDeleteModal();
+
         try {
-            await api.deleteAnnouncement(id);
-            fetchAnnouncements();
+            await api.deleteAnnouncement(announcementToDelete.id);
+            // Remove from local state immediately for better UX
+            setAnnouncements(prev => prev.filter(ann => ann.id !== announcementToDelete.id));
+            showSuccess('Announcement deleted successfully');
         } catch (err) {
-            alert('Failed to delete announcement');
+            console.error('Failed to delete announcement:', err);
+            showError('Failed to delete announcement. Please try again.');
+            // Refetch to restore state if delete failed
+            fetchAnnouncements();
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -137,8 +167,10 @@ export const AnnouncementManagement = () => {
                     {isLoading ? (
                         <div className="flex justify-center p-12"><Loader2 className="animate-spin text-primary-600" size={48} /></div>
                     ) : announcements.length > 0 ? (
-                        announcements.map(ann => (
-                            <div key={ann.id} className="card group hover:shadow-lg transition-all border-l-4 overflow-hidden relative" style={{ borderLeftColor: ann.priority === 'HIGH' ? '#ef4444' : ann.priority === 'MEDIUM' ? '#f97316' : '#3b82f6' }}>
+                        announcements.map(ann => {
+                            const isDeleting = deletingId === ann.id;
+                            return (
+                            <div key={ann.id} className={`card group hover:shadow-lg transition-all border-l-4 overflow-hidden relative ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`} style={{ borderLeftColor: ann.priority === 'HIGH' ? '#ef4444' : ann.priority === 'MEDIUM' ? '#f97316' : '#3b82f6' }}>
                                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-3 mb-2">
@@ -157,16 +189,21 @@ export const AnnouncementManagement = () => {
                                     </div>
                                     <div className="flex md:flex-col gap-2">
                                         <button
-                                            onClick={() => handleDelete(ann.id)}
-                                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                            onClick={() => openDeleteModal(ann)}
+                                            disabled={isDeleting}
+                                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                             title="Delete Announcement"
                                         >
-                                            <Trash2 size={20} />
+                                            {isDeleting ? (
+                                                <Loader2 size={20} className="animate-spin text-red-500" />
+                                            ) : (
+                                                <Trash2 size={20} />
+                                            )}
                                         </button>
                                     </div>
                                 </div>
                             </div>
-                        ))
+                        )})
                     ) : (
                         <div className="text-center py-24 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
                             <Megaphone className="mx-auto text-gray-300 mb-4" size={64} />
@@ -174,6 +211,50 @@ export const AnnouncementManagement = () => {
                         </div>
                     )}
                 </div>
+
+                {/* Delete Confirmation Modal */}
+                <Modal
+                    isOpen={deleteModalOpen}
+                    onClose={closeDeleteModal}
+                    title="Delete Announcement"
+                    maxWidth="sm"
+                >
+                    <div className="p-6">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+                                <AlertTriangle className="text-red-600" size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900">Delete Announcement?</h3>
+                                <p className="text-sm text-gray-500 mt-1">This action cannot be undone.</p>
+                            </div>
+                        </div>
+
+                        {announcementToDelete && (
+                            <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                                <p className="text-xs font-bold text-gray-400 uppercase mb-1">Announcement to be deleted</p>
+                                <p className="font-semibold text-gray-900">{announcementToDelete.title}</p>
+                                <p className="text-sm text-gray-600 mt-1 line-clamp-2">{announcementToDelete.content}</p>
+                            </div>
+                        )}
+
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={closeDeleteModal}
+                                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium flex items-center gap-2"
+                            >
+                                <Trash2 size={18} />
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
             </div>
         </DashboardLayout>
     );
